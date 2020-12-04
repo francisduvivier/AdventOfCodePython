@@ -1,7 +1,3 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 def printifOk(n1, n2, n3):
     if (n1 + n2 + n3) == 2020:
         print('solution: ' + str(n1 * n2 * n3))
