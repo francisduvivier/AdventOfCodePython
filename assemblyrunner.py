@@ -5,42 +5,32 @@ def runAssembly(assembly: str):
     doubleSplit = map(splitter(' '), assembly.splitlines())
     code: [[str, int]] = list(map(lambda elements: [elements[0], int(elements[1])], doubleSplit))
 
-    global ip
-    global accVal
-
-    def reset():
-        global ip
-        global accVal
-        ip = 0
-        accVal = 0
-
-    reset()
+    ip = 0
+    accVal = 0
     alreadyDone = []
     while ip < len(code) and ip not in alreadyDone:
         alreadyDone.append(ip)
         op = code[ip][0]
-        arg = code[ip][1]
+        args = code[ip][1:]
 
-        def acc(arg):
-            global accVal
-            global ip
-            accVal += arg
-            ip += 1
+        def acc(args, ip):
+            nonlocal accVal
+            accVal += args[0]
 
-        def jmp(arg):
-            global ip
-            ip += arg
+        def jmp(args, ip):
+            return ip + args[0]
 
-        def nop(arg):
-            global ip
-            ip += 1
+        def nop(args, ip):
+            pass
 
         switcher = {
             'acc': acc,
             'jmp': jmp,
             'nop': nop,
         }
-        switcher[op](arg)
-    if (ip in alreadyDone):
+        newIp = switcher[op](args, ip)
+        ip = newIp if newIp else ip + 1
+
+    if ip in alreadyDone:
         return 'error, lastVal: ' + str(accVal)
     return accVal
