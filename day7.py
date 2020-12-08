@@ -41,8 +41,8 @@ def checkHasPathRec(color: str, currPath=[]):
 
 
 def part1():
-    # input: str = open('tinput7.txt', 'r').read().strip().splitlines()
-    input: str = open('input7.txt', 'r').read().strip().splitlines()
+    # input: str = open('day7-tinput.txt', 'r').read().strip().splitlines()
+    input: str = open('day7-input.txt', 'r').read().strip().splitlines()
     print(input)
     for line in input:
         processor1(line)
@@ -68,8 +68,8 @@ def countColorsRec(color: str):
 
 
 def part2():
-    # input: list[str] = open('tinput7.txt', 'r').read().strip().splitlines()
-    input: str = open('input7.txt', 'r').read().strip().splitlines()
+    # input: list[str] = open('day7-tinput.txt', 'r').read().strip().splitlines()
+    input: str = open('day7-input.txt', 'r').read().strip().splitlines()
     print(input)
     for line in input:
         processor1(line)

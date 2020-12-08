@@ -13,8 +13,8 @@ def yesLetters(group):
 
 
 def part1():
-    # input: str = open('tinput6.txt', 'r').read().strip()
-    input: str = open('input6.txt', 'r').read().strip()
+    # input: str = open('day6-tinput.txt', 'r').read().strip()
+    input: str = open('day6-input.txt', 'r').read().strip()
     groups = input.split('\n\n')
     res = sum(map(yesLetters, groups))
     print('part 1: ' + str(res))
@@ -29,8 +29,8 @@ def yesLetters2(group):
     return len(filtered)
 
 def part2():
-    # input: str = open('tinput6.txt', 'r').read().strip()
-    input: str = open('input6.txt', 'r').read().strip()
+    # input: str = open('day6-tinput.txt', 'r').read().strip()
+    input: str = open('day6-input.txt', 'r').read().strip()
     groups = input.split('\n\n')
     res = sum(map(yesLetters2, groups))
     print('part2 : ' + str(res))

@@ -3,7 +3,7 @@ def isOk(lines: [str], row, col):
 
 
 def part1():
-    input: str = open('input3.txt', 'r').read()
+    input: str = open('day3-input.txt', 'r').read()
     lines = list(input.split('\n'))
     colSlope = 3
     rowSlope = 1
@@ -25,7 +25,7 @@ def checkTreesHit(colSlope, rowSlope, lines):
 
 
 def part2():
-    input: str = open('input3.txt', 'r').read()
+    input: str = open('day3-input.txt', 'r').read()
     lines = list(input.split('\n'))
     slopes = [[1, 1],
               [3, 1],

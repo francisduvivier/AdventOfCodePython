@@ -13,7 +13,7 @@ def isOk(line: str):
 
 
 def part1():
-    input: str = open('input2.txt', 'r').read()
+    input: str = open('day2-input.txt', 'r').read()
     nbOk = len(list(filter(isOk, input.split('\n'))))
     print('nbOk: ' + str(nbOk))
 
@@ -30,7 +30,7 @@ def isOk2(line: str):
 
 
 def part2():
-    input: str = open('input2.txt', 'r').read()
+    input: str = open('day2-input.txt', 'r').read()
     nbOk = len(list(filter(isOk2, input.split('\n'))))
     print('nbOk: ' + str(nbOk))
 

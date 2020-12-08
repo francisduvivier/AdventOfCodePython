@@ -9,7 +9,7 @@ def toId(seat):
 
 
 def part1():
-    input: str = open('input5.txt', 'r').read()
+    input: str = open('day5-input.txt', 'r').read()
     lines = list(input.split('\n'))
     seats = map(toSeat, lines)
     ids = map(toId, seats)
@@ -17,7 +17,7 @@ def part1():
 
 
 def part2():
-    input: str = open('input5.txt', 'r').read()
+    input: str = open('day5-input.txt', 'r').read()
     lines = list(input.split('\n'))
     seats = map(toSeat, lines)
     ids = list(sorted(map(toId, seats)))

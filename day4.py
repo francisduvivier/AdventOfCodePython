@@ -17,7 +17,7 @@ def isOkLine(line: str):
 
 
 def part1():
-    input: str = open('input4.txt', 'r').read()
+    input: str = open('day4-input.txt', 'r').read()
     lines = map(lambda e: e.replace('\n', ' '), input.split('\n\n'))
     lines = filter(isOkLine, lines)
     print('hi ' + str(len(list(lines))))
@@ -64,7 +64,7 @@ def isOkLine2(line: str):
 
 
 def part2():
-    input: str = open('input4.txt', 'r').read()
+    input: str = open('day4-input.txt', 'r').read()
     lines = map(lambda e: e.replace('\n', ' '), input.split('\n\n'))
     lines = filter(isOkLine2, lines)
     print('solution: ' + str(len(list(lines))))

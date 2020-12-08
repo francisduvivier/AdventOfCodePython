@@ -4,7 +4,7 @@ def printifOk(n1, n2, n3):
 
 
 def part2():
-    input: str = open('input1.txt', 'r').read()
+    input: str = open('day1-input.txt', 'r').read()
     numbers = list(map(int, input.split('\n')))
     for n1 in numbers:
         for n2 in numbers:
