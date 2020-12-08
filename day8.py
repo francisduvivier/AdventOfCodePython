@@ -12,6 +12,7 @@ def part1():
     input: [str] = open('day8-input.txt', 'r').read().strip()
     result = runAssembly(input)
     print('Part 1 total: ' + str((result)))
+    return int(result.split(' ')[-1])
 
 
 def part2():
@@ -26,12 +27,12 @@ def part2():
         result = runAssembly(mut)
         if 'error' not in str(result):
             print('Part 2 total: ' + str((result)))
-            return
+            return result
 
 
 if __name__ == '__main__':
     print('started\n')
-    # part1()
-    part2()
+    assert part1() == 1610
+    assert part2() == 1703
 
     # See PyCharm help at https://www.jetbrains.com/help/pycharm/
