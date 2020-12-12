@@ -59,23 +59,10 @@ def follow_instuctions(input, startRow=0, startCol=0, startDir={'row': 1, 'col':
                     amount = 90
                 assert amount == 90
                 if (waypoint):
-                    cos = round(math.cos(amount + (180 if letter == 'L' else 0)))
-                    sin = round(math.sin(amount + (180 if letter == 'L' else 0)))
-                    wCol = wCol * cos + wRow * sin
-                    wRow = wRow * cos + wCol * sin
+                    wRow, wCol = rotate_point(amount, letter, wCol, wRow)
                 else:
-                    if wDir['row'] == 1:
-                        wDir['col'] = -1 if letter == 'L' else 1
-                        wDir['row'] = 0
-                    elif wDir['row'] == -1:
-                        wDir['col'] = 1 if letter == 'L' else -1
-                        wDir['row'] = 0
-                    elif wDir['col'] == 1:
-                        wDir['row'] = 1 if letter == 'L' else -1
-                        wDir['col'] = 0
-                    elif wDir['col'] == -1:
-                        wDir['row'] = -1 if letter == 'L' else 1
-                        wDir['col'] = 0
+                    wDir['row'], wDir['col'] = rotate_point(amount, letter, wDir['row'], wDir['col'])
+
         if letter == 'F':
             # means to move forward by the given value in the direction
             if waypoint:
@@ -84,8 +71,25 @@ def follow_instuctions(input, startRow=0, startCol=0, startDir={'row': 1, 'col':
             else:
                 wCol += wDir['col'] * amount
                 wRow += wDir['row'] * amount
+        print('[letter, amount, wRow, wCol, wDir, sRow, sCol]')
         print([letter, amount, wRow, wCol, wDir, sRow, sCol])
     return abs(wRow) + abs(wCol) if not waypoint else abs(sRow) + abs(sCol)
+
+
+def rotate_point(amount, letter, row, col):
+    cos = round(math.cos(amount * (-1 if letter == 'L' else 1)))
+    sin = round(math.sin(amount * (-1 if letter == 'L' else 1)))
+    print(['cos', cos, 'sin', sin])
+    newRow = row * cos - col * sin
+    newCol = row * sin + col * cos
+    return newRow, newCol
+
+
+assert rotate_point(90, 'R', 1, 1) == (-1, 1)
+assert rotate_point(90, 'L', 1, 1) == (1, -1)
+assert rotate_point(90, 'R', -1, 1) == (-1, -1)
+assert rotate_point(90, 'L', -1, 1) == (1, 1)
+assert rotate_point(90, 'L', -1, -1) == (-1, 1)
 
 
 def part2(input):
@@ -94,8 +98,8 @@ def part2(input):
 
 if __name__ == '__main__':
     # print(['part1', (part1(tInput))])
-    # part_ = part1(rInput)
-    # print(['part1', part_])
-    # assert part_ == 1482
-    print(['part2 t', part2(tInput)])
-    # print(['part2', part2(rInput)])
+    part_ = part1(rInput)
+    print(['part1', part_])
+    assert part_ == 1482
+    # print(['part2 t', part2(tInput)])
+    print(['part2', part2(rInput)])
