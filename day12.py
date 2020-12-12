@@ -1,3 +1,6 @@
+import math
+
+
 def getTestInput():
     return '''F10
 N3
@@ -44,30 +47,40 @@ def follow_instuctions(input, startRow=0, startCol=0, startDir={'row': 1, 'col':
             # L means to turn left the given number of degrees.
             # R means to turn right the given number of degrees.
             if amount == 180:
-                wDir['row'] = -wDir['row']
-                wDir['col'] = -wDir['col']
+                if waypoint:
+                    wCol = -wCol
+                    wRow = -wRow
+                else:
+                    wDir['row'] = -wDir['row']
+                    wDir['col'] = -wDir['col']
             else:  # 90
                 if amount == 270:
                     letter = 'L' if letter == 'R' else 'R'
-                amount = 90
+                    amount = 90
                 assert amount == 90
-                if wDir['row'] == 1:
-                    wDir['col'] = -1 if letter == 'L' else 1
-                    wDir['row'] = 0
-                elif wDir['row'] == -1:
-                    wDir['col'] = 1 if letter == 'L' else -1
-                    wDir['row'] = 0
-                elif wDir['col'] == 1:
-                    wDir['row'] = 1 if letter == 'L' else -1
-                    wDir['col'] = 0
-                elif wDir['col'] == -1:
-                    wDir['row'] = -1 if letter == 'L' else 1
-                    wDir['col'] = 0
+                if (waypoint):
+                    cos = round(math.cos(amount + (180 if letter == 'L' else 0)))
+                    sin = round(math.sin(amount + (180 if letter == 'L' else 0)))
+                    wCol = wCol * cos + wRow * sin
+                    wRow = wRow * cos + wCol * sin
+                else:
+                    if wDir['row'] == 1:
+                        wDir['col'] = -1 if letter == 'L' else 1
+                        wDir['row'] = 0
+                    elif wDir['row'] == -1:
+                        wDir['col'] = 1 if letter == 'L' else -1
+                        wDir['row'] = 0
+                    elif wDir['col'] == 1:
+                        wDir['row'] = 1 if letter == 'L' else -1
+                        wDir['col'] = 0
+                    elif wDir['col'] == -1:
+                        wDir['row'] = -1 if letter == 'L' else 1
+                        wDir['col'] = 0
         if letter == 'F':
             # means to move forward by the given value in the direction
             if waypoint:
-                sCol += (wCol - sCol) * amount
-                sRow += (wRow - sRow) * amount
+                sCol += (wCol) * amount
+                sRow += (wRow) * amount
             else:
                 wCol += wDir['col'] * amount
                 wRow += wDir['row'] * amount
