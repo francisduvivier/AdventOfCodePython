@@ -18,92 +18,71 @@ rInput = open('day12-input.txt').read().strip().splitlines()
 #  S
 
 def part1(input):
-    return follow_instuctions(input, startDir={'row': 0, 'col': 1})
+    return follow_instuctions(input, dirMap['E'], False)
 
 
-def follow_instuctions(input, startRow=0, startCol=0, startDir={'row': 1, 'col': 0}, waypoint=False):
-    wRow = startRow
-    wCol = startCol
-    wDir = startDir
-    sCol = 0
-    sRow = 0
-    print(['_', '_', wRow, wCol, wDir, sCol, sRow])
+dirMap = {'N': {'row': -1, 'col': 0}, 'S': {'row': 1, 'col': 0}, 'W': {'row': 0, 'col': -1}, 'E': {'row': 0, 'col': 1}}
+
+
+def movePoint(p, dir, amount):
+    p['row'] += dir['row'] * amount
+    p['col'] += dir['col'] * amount
+
+
+def follow_instuctions(input, startWp, moveWaypoint):
+    ship = {'row': 0, 'col': 0}
+    wp = startWp
+    print(['_', '_', ship, wp])
     for instruct in input:
         letter = instruct[0]
         amount = int(instruct[1:])
-        if letter == 'N':
-            # means to move north by the given value.
-            wRow += amount
-        if letter == 'S':
-            # means to move south by the given value.
-            wRow -= amount
-        if letter == 'E':
-            # means to move east by the given value.
-            wCol += amount
-        if letter == 'W':
-            # means to move west by the given value.
-            wCol -= amount
+        if letter in dirMap:
+            movePoint(wp if moveWaypoint else ship, dirMap[letter], amount)
         if letter == 'L' or letter == 'R':
-            # L means to turn left the given number of degrees.
-            # R means to turn right the given number of degrees.
-            if amount == 180:
-                if waypoint:
-                    wCol = -wCol
-                    wRow = -wRow
-                else:
-                    wDir['row'] = -wDir['row']
-                    wDir['col'] = -wDir['col']
-            else:  # 90
-                if amount == 270:
-                    letter = 'L' if letter == 'R' else 'R'
-                    amount = 90
-                assert amount == 90
-                if waypoint:
-                    wRow, wCol = rotate_point(amount, letter, wRow, wCol)
-                else:
-                    wDir['row'], wDir['col'] = rotate_point(amount, letter, wDir['row'], wDir['col'])
-
+            wp = rotate_point(amount, letter, wp)
         if letter == 'F':
-            # means to move forward by the given value in the direction
-            if waypoint:
-                sCol += wCol * amount
-                sRow += wRow * amount
-            else:
-                wCol += wDir['col'] * amount
-                wRow += wDir['row'] * amount
+            movePoint(ship, wp, amount)
+
         print('[letter, amount, wRow, wCol, wDir, sRow, sCol]')
-        print([letter, amount, wRow, wCol, wDir, sRow, sCol])
-    return abs(wRow) + abs(wCol) if not waypoint else abs(sRow) + abs(sCol)
+        print([instruct, ship, wp])
+    return abs(ship['row']) + abs(ship['col'])
 
 
-def rotate_point(amount, letter, row, col):
-    cos = round(math.cos(amount * (-1 if letter == 'L' else 1)))
-    sin = round(math.sin(amount * (-1 if letter == 'L' else 1)))
-    print(['cos', cos, 'sin', sin])
-    newRow = row * cos - col * sin
-    newCol = row * sin + col * cos
-    return newRow, newCol
+def rotate_point(amount, letter, p: {'row': int, 'col': int}):
+    y = -p['row']
+    x = p['col']
+    # Positive degrees go counter clockwise (L) if you start at the bottom right
+    signedRadians = math.radians(amount * (-1 if letter == 'R' else 1))
+    cos = round(math.cos(signedRadians))
+    sin = round(math.sin(signedRadians))
+    newX = x * cos - y * sin
+    newY = x * sin + y * cos
+    newP = {'row': -newY, 'col': newX}
+    # print(newP, cos, sin, cos)
+    return newP
 
 
-assert rotate_point(90, 'R', 1, 1) == (-1, 1)
-assert rotate_point(90, 'L', 1, 1) == (1, -1)
-assert rotate_point(90, 'R', -1, 1) == (-1, -1)
-assert rotate_point(90, 'L', -1, 1) == (1, 1)
-assert rotate_point(90, 'L', -1, -1) == (-1, 1)
+for deg in [180, -180]:
+    for dir in ['L', 'R']:
+        for row in [0, 1, -1]:
+            for col in [0, 1, -1]:
+                assert rotate_point(deg, dir, {'row': row, 'col': col}) == {'row': -row, 'col': -col}
 
 
 def part2(input):
-    return follow_instuctions(input, 1, 10, {'col': 0, 'row': -1}, True)
+    return follow_instuctions(input, {'row': -1, 'col': 10}, True)
 
 
 if __name__ == '__main__':
     part_t = part1(tInput)
     print(['part1', (part_t)])
     assert part_t == 25
-    part_ = part1(rInput)
-    print(['part1', part_])
-    assert part_ == 1482
-    i = part2(tInput)
-    print(['part2 t', i])
-    assert i == 286
-    print(['part2', part2(rInput)])
+    part1_r = part1(rInput)
+    print(['part1', part1_r])
+    assert part1_r == 1482
+    part2_t = part2(tInput)
+    print(['part2 t', part2_t])
+    assert part2_t == 286
+    part2_r = part2(rInput)
+    print(['part2', part2_r])
+    assert part2_r == 48739
