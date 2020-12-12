@@ -18,7 +18,7 @@ rInput = open('day12-input.txt').read().strip().splitlines()
 #  S
 
 def part1(input):
-    return follow_instuctions(input)
+    return follow_instuctions(input, startDir={'row': 0, 'col': 1})
 
 
 def follow_instuctions(input, startRow=0, startCol=0, startDir={'row': 1, 'col': 0}, waypoint=False):
@@ -33,10 +33,10 @@ def follow_instuctions(input, startRow=0, startCol=0, startDir={'row': 1, 'col':
         amount = int(instruct[1:])
         if letter == 'N':
             # means to move north by the given value.
-            wRow -= amount
+            wRow += amount
         if letter == 'S':
             # means to move south by the given value.
-            wRow += amount
+            wRow -= amount
         if letter == 'E':
             # means to move east by the given value.
             wCol += amount
@@ -58,16 +58,16 @@ def follow_instuctions(input, startRow=0, startCol=0, startDir={'row': 1, 'col':
                     letter = 'L' if letter == 'R' else 'R'
                     amount = 90
                 assert amount == 90
-                if (waypoint):
-                    wRow, wCol = rotate_point(amount, letter, wCol, wRow)
+                if waypoint:
+                    wRow, wCol = rotate_point(amount, letter, wRow, wCol)
                 else:
                     wDir['row'], wDir['col'] = rotate_point(amount, letter, wDir['row'], wDir['col'])
 
         if letter == 'F':
             # means to move forward by the given value in the direction
             if waypoint:
-                sCol += (wCol) * amount
-                sRow += (wRow) * amount
+                sCol += wCol * amount
+                sRow += wRow * amount
             else:
                 wCol += wDir['col'] * amount
                 wRow += wDir['row'] * amount
@@ -93,13 +93,17 @@ assert rotate_point(90, 'L', -1, -1) == (-1, 1)
 
 
 def part2(input):
-    return follow_instuctions(input, -1, 10, {'col': 0, 'row': -1}, True)
+    return follow_instuctions(input, 1, 10, {'col': 0, 'row': -1}, True)
 
 
 if __name__ == '__main__':
-    # print(['part1', (part1(tInput))])
+    part_t = part1(tInput)
+    print(['part1', (part_t)])
+    assert part_t == 25
     part_ = part1(rInput)
     print(['part1', part_])
     assert part_ == 1482
-    # print(['part2 t', part2(tInput)])
+    i = part2(tInput)
+    print(['part2 t', i])
+    assert i == 286
     print(['part2', part2(rInput)])
