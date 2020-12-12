@@ -33,29 +33,31 @@ def part1(input):
         if letter == 'W':
             # means to move west by the given value.
             col -= amount
-        if letter == 'L' or amount == 'R':
+        if letter == 'L' or letter == 'R':
+            print(dir)
             # L means to turn left the given number of degrees.
             # R means to turn right the given number of degrees.
-            if amount == 270:
-                letter = 'L' if letter == 'R' else 'R'
-                amount = 90
             if amount == 180:
                 dir['row'] = -dir['row']
                 dir['col'] = -dir['col']
             else:  # 90
+                if amount == 270:
+                    letter = 'L' if letter == 'R' else 'R'
+                amount = 90
                 assert amount == 90
                 if dir['row'] == 1:
                     dir['col'] = -1 if letter == 'L' else 1
                     dir['row'] = 0
-                if dir['col'] == 1:
-                    dir['row'] = 1 if letter == 'L' else -1
-                    dir['col'] = 0
-                if dir['row'] == -1:
+                elif dir['row'] == -1:
                     dir['col'] = 1 if letter == 'L' else -1
                     dir['row'] = 0
-                if dir['col'] == -1:
+                elif dir['col'] == 1:
+                    dir['row'] = 1 if letter == 'L' else -1
+                    dir['col'] = 0
+                elif dir['col'] == -1:
                     dir['row'] = -1 if letter == 'L' else 1
                     dir['col'] = 0
+            print([letter, amount, dir])
         if letter == 'F':
             # means to move forward by the given value in the direction
             col += dir['col'] * amount
