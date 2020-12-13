@@ -24,17 +24,25 @@ def part1(input):
 def part2(input, startNb=1):
     busNumbers = input.split(',')
     print(busNumbers)
-    multiplier = math.floor(startNb / int(busNumbers[0])) + 1
     tuples = []
-    for index, busNumber in enumerate(busNumbers[1:]):
+    bigestTuple = [-1, -1]
+    for index, busNumber in enumerate(busNumbers):
         if busNumber == 'x': continue
-        tuples.append([index, int(busNumber)])
+        busNumber = int(busNumber)
+        tuple = [index, busNumber]
+        if bigestTuple[1] < busNumber:
+            bigestTuple = tuple
+        tuples.append(tuple)
+    tuples.remove(bigestTuple)
+    print(tuples, bigestTuple)
+    biggestNumberIndex =bigestTuple[0]
+    biggestNumber =bigestTuple[1]
+    multiplier = math.floor(startNb / biggestNumber) + 1
     while True:
-        startTime = int(busNumbers[0]) * multiplier
-        # print(busNumbers[0], startTime, multiplier)
+        startTime = biggestNumber * multiplier - biggestNumberIndex
         ok = True
         for index, busNumber in tuples:
-            if ((startTime + index + 1) % busNumber) != 0:
+            if ((startTime + index) % busNumber) != 0:
                 ok = False
                 break
         if ok:
