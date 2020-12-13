@@ -25,13 +25,15 @@ def part2(input, startNb=1):
     busNumbers = input.split(',')
     print(busNumbers)
     multiplier = math.floor(startNb / int(busNumbers[0])) + 1
+    tuples = []
+    for index, busNumber in enumerate(busNumbers[1:]):
+        if busNumber == 'x': continue
+        tuples.append([index, int(busNumber)])
     while True:
         startTime = int(busNumbers[0]) * multiplier
         # print(busNumbers[0], startTime, multiplier)
         ok = True
-        for index, busNumber in enumerate(busNumbers[1:]):
-            if busNumber == 'x': continue
-            busNumber = int(busNumber)
+        for index, busNumber in tuples:
             if ((startTime + index + 1) % busNumber) != 0:
                 ok = False
                 break
