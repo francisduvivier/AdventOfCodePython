@@ -6,7 +6,6 @@ mem[42] = 100
 mask = 00000000000000000000000000000000X0XX
 mem[26] = 1
 '''.strip().splitlines()
-print(tInput2)
 tInput = open('day14-testinput.txt').read().strip().splitlines()
 rInput = open('day14-input.txt').read().strip().splitlines()
 
@@ -43,17 +42,27 @@ import re
 
 
 def generate_addresses(address, maskString):
-    xpostions = []
+    mutatedMaskStrings = generate_mutated_masks(maskString)
     addresses = []
-    for pos in re.finditer(maskString, 'X'):
-        xpostions.append(pos.start())
-    for xConfig in range(int(math.pow(2, len(xpostions))) - 1):
-        xBits = '{0:b}'.format(xConfig)
-        mutatedMaskString = mutate_maskString(maskString, xBits, xpostions)
-        maskedAddress = address | int(mutatedMaskString, 2)
+    for maskString in mutatedMaskStrings:
+        maskedAddress = mask_address(address, maskString)
         addresses.append(maskedAddress)
     print(addresses)
     return addresses
+
+
+def mask_address(address, maskString):
+    zeroMaskString = maskString.replace('_', '1')
+    maskZeros = int(zeroMaskString, 2)
+    masked = address & maskZeros
+    onesMaskString = maskString.replace('_', '0')
+    maskOnes = int(onesMaskString, 2)
+    masked = masked | maskOnes
+    return masked
+
+
+def replaceIndex(maskString, xpos, xBit):
+    return maskString[:xpos] + xBit + maskString[xpos + 1:]
 
 
 def mutate_maskString(maskString, xBits, xpostions):
@@ -65,8 +74,21 @@ def mutate_maskString(maskString, xBits, xpostions):
     return mutatedMaskString
 
 
-def replaceIndex(maskString, xpos, xBit):
-    return maskString[:xpos] + xBit + maskString[xpos + 1:]
+def generate_mutated_masks(maskString):
+    print('generate_mutated_masks', maskString)
+    xpostions = []
+    for pos in re.finditer('X', maskString):
+        xpostions.append(pos.start())
+    mutatedMaskStrings = []
+    print('xpositions', xpostions)
+    for xConfig in range(int(math.pow(2, len(xpostions)))):
+        xBits = '{0:b}'.format(xConfig).zfill(len(xpostions))
+        mutatedMaskStrings.append(mutate_maskString(maskString, xBits, xpostions))
+    print('mutatedMaskStrings', mutatedMaskStrings)
+    return mutatedMaskStrings
+
+
+assert generate_mutated_masks('X0X') == ['000', '001', '100', '101']
 
 
 def part2(input):
@@ -75,7 +97,7 @@ def part2(input):
     mem = dict()
     for line in lines:
         if (line.startswith('mask')):
-            maskString = line[len('mask = '):]
+            maskString = line[len('mask = '):].replace('0', '_')
             print(maskString)
         elif (line.startswith('mem[')):
             [start, end] = line[len('mem['):].split('] = ')
@@ -94,11 +116,11 @@ def part2(input):
 
 
 if __name__ == '__main__':
-    # part1_t = part1(tInput)
-    # print(['part1', (part1_t)])
-    # assert part1_t == 165
-    # part1_r = part1(rInput)
-    # print(['part1', part1_r])
+    part1_t = part1(tInput)
+    print(['part1', (part1_t)])
+    assert part1_t == 165
+    part1_r = part1(rInput)
+    print(['part1', part1_r])
     part2_t = part2(tInput2)
     print(['part2', (part2_t)])
     assert part2_t == 208
