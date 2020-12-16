@@ -1,5 +1,3 @@
-import math
-
 tInput = open('day13-testinput.txt').read().strip().splitlines()
 rInput = open('day13-input.txt').read().strip().splitlines()
 
