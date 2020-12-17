@@ -32,7 +32,7 @@ def doCycle(actives):
         if key in countMap:
             count = countMap[key]['count']
             del countMap[key]
-        if not (2 >= count >= 3):
+        if not (count == 3 or count == 2):
             newInactives.append(active)
     for nia in newInactives: actives.remove(nia)
     for inactive in countMap.values():
