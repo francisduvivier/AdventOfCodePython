@@ -1,17 +1,11 @@
+import re
+
 tInput = open('day18-testinput.txt').read().strip().splitlines()
 rInput = open('day18-input.txt').read().strip().splitlines()
 
 
-def calcMapRec(map):
-    return 1
-
-
-import re
-
-
 def doCalcPart2(subCalc):
     print('doCalc subCalc', subCalc)
-    result = subCalc[0]
     subCalcString = ''.join(list(map(str, subCalc)))
     subCalcString = re.sub(r'([0-9+]+)', r'(\1)', subCalcString)
     return eval(subCalcString)
@@ -19,12 +13,10 @@ def doCalcPart2(subCalc):
 
 def doCalcPart1(subCalc):
     print('doCalc subCalc', subCalc)
-    result = subCalc[0]
-    for i in range(1, len(subCalc) - 1, 2):
-        toEval = str(result) + str(subCalc[i]) + str(subCalc[i + 1])
-        print('toEval', toEval)
-        result = eval(toEval)
-    return result
+    subCalcString = ''.join(list(map(str, subCalc)))
+    subCalcString = re.sub(r'([*+])', r')\1', subCalcString)
+    subCalcString = subCalcString.count(')') * '(' + subCalcString
+    return eval(subCalcString)
 
 
 def calcLine(line, simpleCalcFunc=doCalcPart1):
@@ -78,12 +70,11 @@ if __name__ == '__main__':
     part1_r = part1(rInput)
     print(['part1 real', part1_r])
     assert part1_r == 14208061823964
-
-assert calcLine('1 + (2 * 3) + (4 * (5 + 6))', doCalcPart2) == 51
-assert calcLine('2 * 3 + (4 * 5)', doCalcPart2) == 46
-assert calcLine('5 + (8 * 3 + 9 + 3 * 4 * 3)', doCalcPart2) == 1445
-assert calcLine('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))', doCalcPart2) == 669060
-assert calcLine('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2', doCalcPart2) == 23340
-
-part2_r = part2(rInput)
-print(['part2 real', part2_r])
+    assert calcLine('1 + (2 * 3) + (4 * (5 + 6))', doCalcPart2) == 51
+    assert calcLine('2 * 3 + (4 * 5)', doCalcPart2) == 46
+    assert calcLine('5 + (8 * 3 + 9 + 3 * 4 * 3)', doCalcPart2) == 1445
+    assert calcLine('5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))', doCalcPart2) == 669060
+    assert calcLine('((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2', doCalcPart2) == 23340
+    part2_r = part2(rInput)
+    print(['part2 real', part2_r])
+    assert part2_r == 320536571743074
