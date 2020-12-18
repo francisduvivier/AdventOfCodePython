@@ -5,14 +5,14 @@ rInput = open('day18-input.txt').read().strip().splitlines()
 
 
 def doCalcPart2(subCalc):
-    print('doCalc subCalc', subCalc)
+    # print('doCalc subCalc', subCalc)
     subCalcString = ''.join(list(map(str, subCalc)))
     subCalcString = re.sub(r'([0-9+]+)', r'(\1)', subCalcString)
     return eval(subCalcString)
 
 
 def doCalcPart1(subCalc):
-    print('doCalc subCalc', subCalc)
+    # print('doCalc subCalc', subCalc)
     subCalcString = ''.join(list(map(str, subCalc)))
     subCalcString = re.sub(r'([*+])', r')\1', subCalcString)
     subCalcString = subCalcString.count(')') * '(' + subCalcString
@@ -21,7 +21,7 @@ def doCalcPart1(subCalc):
 
 def calcLine(line, simpleCalcFunc=doCalcPart1):
     parts = list(filter(lambda ch: ch != ' ', [char for char in line]))
-    print('parts', parts)
+    # print('parts', parts)
     deepCalcList = []
     calcStack = []
     for part in parts:
@@ -41,9 +41,9 @@ def calcLine(line, simpleCalcFunc=doCalcPart1):
             pass
         else:
             deepCalcList.append(part)
-    print(deepCalcList)
+    # print(deepCalcList)
     result = simpleCalcFunc(deepCalcList)
-    print([line, deepCalcList, result])
+    # print([line, deepCalcList, result])
 
     return result
 
