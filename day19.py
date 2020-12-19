@@ -1,15 +1,13 @@
 import re
+import regex # Might need pip install regex
 
 tInput = open('day19-testinput.txt').read().strip()
 tInput2 = open('day19-testinput2.txt').read().strip()
 rInput = open('day19-input.txt').read().strip()
 
-import re
-
 
 def getRegexRec(rules, ruleString):
     print('resolving rule: ' + ruleString)
-    options = []
     if re.fullmatch(r'"[a-zA-Z]"', ruleString):
         return re.search(r'[a-zA-Z]', ruleString)[0]
     elif ruleString.startswith('(?P&'):
@@ -32,9 +30,6 @@ def getRegexRec(rules, ruleString):
     if ruleString.startswith('(?P<'):
         result = ruleString.split('>')[0] + '>' + '|'.join(allOptions) + ')'
     return result
-
-
-import regex
 
 
 def getValidsOptions(mRegex, strings):
