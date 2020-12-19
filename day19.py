@@ -62,7 +62,7 @@ def part1(input):
 def part2(input):
     [rules, strings] = parseInputToRulesAndOptions(input)
     rules['8'] = '8: (?P<acht>42 | 42 (?P&acht))'
-    rules['11'] = '11: (?P<elf>42 31 | 42 (?P&elf) 31'
+    rules['11'] = '11: (?P<elf>42 31 | 42 (?P&elf) 31)'
     print(rules, strings)
     mRegex = getRegexRec(rules, '0')
     print(mRegex)
