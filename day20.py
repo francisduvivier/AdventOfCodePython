@@ -105,9 +105,7 @@ def getEdgeElements(matrix, rowDiff, colDiff):
         return matrix[rowDiff if rowDiff == -1 else 0, :]
 
 
-elements = getEdgeElements(np.array([[1, 2], [3, 4]]), 1, 0)
-print('getEdgeElements', elements)
-assert np.array_equal(elements, [1, 2])
+assert np.array_equal(getEdgeElements(np.array([[1, 2], [3, 4]]), 1, 0), [1, 2])
 assert np.array_equal(getEdgeElements(np.array([[1, 2], [3, 4]]), -1, 0), [3, 4])
 assert np.array_equal(getEdgeElements(np.array([[1, 2], [3, 4]]), 0, 1), [1, 3])
 assert np.array_equal(getEdgeElements(np.array([[1, 2], [3, 4]]), 0, -1), [2, 4])
@@ -148,9 +146,9 @@ def part1(input):
         for tilePosKey in tilePosKeysToCheck[0:]:
             if len(tileIdsRemaining) == 0:
                 break
-            print('tilePosKey go', tilePosKey)
+            # print('tilePosKey go', tilePosKey)
             if tilePosKey in matrix:
-                print('tilePosKey rm', tilePosKey)
+                # print('tilePosKey rm', tilePosKey)
                 tilePosKeysToCheck.remove(tilePosKey)
                 continue
             assert len(tileIdsRemaining)
@@ -161,13 +159,13 @@ def part1(input):
                     matrix[tilePosKey] = matchingMutation
                     if tilePosKey in newTilesToCheck: newTilesToCheck.remove(tilePosKey)
                     addAdjacents(tilePosKey, newTilesToCheck)
-                    print('tilePosKey rm', tilePosKey)
+                    # print('tilePosKey rm', tilePosKey)
                     tilePosKeysToCheck.remove(tilePosKey)
                     tileIdsRemaining.remove(matchingMutation['id'])
                     break
-            if not matchingMutation:
-                print("edge possibly found:", tilePosKey)
-        print('tilePosKeysToCheck', tilePosKeysToCheck)
+            # if not matchingMutation:
+            #     print("edge possibly found:", tilePosKey)
+        # print('tilePosKeysToCheck', tilePosKeysToCheck)
         # assert len(tilePosKeysToCheck) == 0 or len(tileIdsRemaining) == 0
         tilePosKeysToCheck = newTilesToCheck
     assert len(tileIdsRemaining) == 0
@@ -197,7 +195,7 @@ if __name__ == '__main__':
     assert part1(tInput) == 20899048083289
     part1_r = part1(rInput)
     print(['part1 real', part1_r])
-    # assert part1_r == 151
+    assert part1_r == 15670959891893
     # assert part2(tInput) == 2
     # part2_r = part2(rInput)
     # print(['part2 real', part2_r])
