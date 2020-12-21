@@ -1,13 +1,10 @@
 import numpy as np
 import math
 
+from util import mapl
+
 tInput = open('day20-testinput.txt').read().strip().split('Tile ')[1:]
 rInput = open('day20-input.txt').read().strip().split('Tile ')[1:]
-
-
-def mapl(func, iterable):
-    return list(map(func, iterable))
-
 
 def toKey(row: int, col: int):
     return str(row) + 'rc' + str(col)
