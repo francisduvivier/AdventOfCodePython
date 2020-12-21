@@ -23,8 +23,16 @@ assert not isSuperset([2, 3, 4], [1, 3])
 
 
 def part1(input):
+    [_, foodMap, okFoods, _] = calcMaps(input)
+    print('okFoods', okFoods)
+    result = sum(map(lambda food: len(foodMap[food]), okFoods))
+    # print('result', result)
+    return result
+
+
+def calcMaps(input):
     parsedInput = mapl(lineToArray, input)
-    remainingOkIngredients = np.concatenate(np.array(mapl(lambda tup: tup[0], parsedInput))).tolist()
+    remainingOkIngredients = np.concatenate(np.array(mapl(lambda tup: tup[0], parsedInput), dtype=object)).tolist()
     print('remainingOkIngredients', remainingOkIngredients)
     allergenMap = dict()
     foodMap = dict()
@@ -55,17 +63,38 @@ def part1(input):
                     foodToAllergenMap[food] = [allergen]
         if not badFood:
             okFoods.append(food)
-    print('okFoods', okFoods)
-    result = sum(map(lambda food: len(foodMap[food]), okFoods))
-    print('result', result)
-    return result
+    return foodToAllergenMap, foodMap, okFoods, allergenMap
+
+
+def solveAllergenOptions(foodToAllergenMap):
+    remainingFoods = [f for f in foodToAllergenMap]
+    while len(remainingFoods) > 0:
+        certainFoods = list(filter(lambda rem: len(foodToAllergenMap[rem]) <= 1, remainingFoods))
+        assert len(certainFoods) > 0
+        for cFood in certainFoods:
+            [certainAllergen] = foodToAllergenMap[cFood]
+            remainingFoods.remove(cFood)
+            for rem in remainingFoods:
+                if certainAllergen in foodToAllergenMap[rem]:
+                    foodToAllergenMap[rem].remove(certainAllergen)
+
+
+def part2(input):
+    [foodToAllergenMap, foodMap, okFoods, allergenMap] = calcMaps(input)
+    assert len(foodToAllergenMap) == len(allergenMap)
+    solveAllergenOptions(foodToAllergenMap)
+
+    # print('result', result)
+    badFoods = [f for f in foodToAllergenMap]
+    badFoods.sort(key=lambda f: foodToAllergenMap[f][0])
+    return ','.join(badFoods)
 
 
 if __name__ == '__main__':
     assert part1(tInput) == 5
     part1_r = part1(rInput)
     print(['part1 real', part1_r])
-    # assert part1_r == TODO
-    # assert part2(tInput) == TODO
-    # part2_r = part2(rInput)
-    # print(['part2 real', part2_r])
+    assert part1_r == 2282
+    assert part2(tInput) == 'mxmxvkd,sqjhc,fvjkl'
+    part2_r = part2(rInput)
+    print(['part2 real', part2_r])
