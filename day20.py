@@ -83,7 +83,7 @@ testArr = []
 addAdjacents(toKey(0, 0), testArr)
 assert np.array_equal(testArr.sort(), ['0rc-1', '0rc1', '-1rc0', '1rc0'].sort())
 
-MatrixVals = {'id': str, 'chosen_mutation': Mutation}
+MatrixVal = {'id': str, 'chosen_mutation': Mutation}
 
 
 def matchesConnectingSide(mutation, tilePosKey, adjacentPosKey, chosenMutationAdjacent):
@@ -93,8 +93,8 @@ def matchesConnectingSide(mutation, tilePosKey, adjacentPosKey, chosenMutationAd
     [rowDiff, colDiff] = list(np.array(adjacentPos) - np.array(newPos))
     # print('[rowDiff, colDiff]', [rowDiff, colDiff])
     assert bool(rowDiff) != bool(colDiff)
-    adjacentElements = getEdgeElements(chosenMutationAdjacent['matrix'], -colDiff, -rowDiff)
-    mutationElements = getEdgeElements(mutation['matrix'], colDiff, rowDiff)
+    adjacentElements = getEdgeElements(chosenMutationAdjacent['matrix'], colDiff, rowDiff)
+    mutationElements = getEdgeElements(mutation['matrix'], -colDiff, -rowDiff)
     return np.array_equal(adjacentElements, mutationElements)
 
 
@@ -111,7 +111,7 @@ assert np.array_equal(getEdgeElements(np.array([[1, 2], [3, 4]]), 0, 1), [1, 3])
 assert np.array_equal(getEdgeElements(np.array([[1, 2], [3, 4]]), 0, -1), [2, 4])
 
 
-def getMatchingMutation(tileId: str, tilePosKey: str, matrix: dict[str, MatrixVals],
+def getMatchingMutation(tileId: str, tilePosKey: str, matrix: dict[str, MatrixVal],
                         idMutationsMap: IdMutationsMapType):
     startMatrix = idMutationsMap[tileId]
     tilePos = toRowCol(tilePosKey)
@@ -132,8 +132,13 @@ def getMatchingMutation(tileId: str, tilePosKey: str, matrix: dict[str, MatrixVa
 
 
 def part1(input):
+    matrix = arrangeMatrix(input)
+    return math.prod(getCorners(matrix))
+
+
+def arrangeMatrix(input) -> dict[str, MatrixVal]:
     idMatrixMap = createMatrixMap(input)
-    matrix: dict[str, MatrixVals] = dict()
+    matrix: dict[str, MatrixVal] = dict()
     tileIdsRemaining: [str] = list(idMatrixMap.keys())
     firstId = tileIdsRemaining.pop()
     firstPosKey = toKey(0, 0)
@@ -170,25 +175,111 @@ def part1(input):
         tilePosKeysToCheck = newTilesToCheck
     assert len(tileIdsRemaining) == 0
     assert len(matrix) == len(idMatrixMap)
-    return math.prod(getCorners(matrix))
+    return matrix
 
 
-def getCorners(matrix):
-    posMin = [0, 0]
+def getCorners(matrix: dict[str, MatrixVal]):
+    minPos = getMinPos(matrix)
+    maxAdd = int(math.sqrt(len(matrix))) - 1
+    corners = [[0, 0], [0, maxAdd], [maxAdd, 0], [maxAdd, maxAdd]]
+    return mapl(lambda corner: int(matrix[toKey(minPos[0] + corner[0], minPos[1] + corner[1])]['id']), corners)
+
+
+def getMinPos(matrix: dict[str, MatrixVal]):
+    minPos = [0, 0]
     for key in matrix:
         pos = toRowCol(key)
-        if (pos[0] <= posMin[0] and pos[1] <= posMin[1]):
-            posMin = pos
-    maxAdd = int(math.sqrt(len(matrix))) - 1
-    corners = [[0, maxAdd], [maxAdd, 0], [0, 0], [maxAdd, maxAdd]]
-    return mapl(lambda corner: int(matrix[toKey(posMin[0] + corner[0], posMin[1] + corner[1])]['id']), corners)
+        if pos[0] <= minPos[0] and pos[1] <= minPos[1]:
+            minPos = pos
+    return minPos
 
 
 assert np.array_equal(getCorners({'0rc0': {'id': '1'}}), [1] * 4)
 
 
+def mergeMatrix(matrix: dict[str, MatrixVal]):
+    minPos = getMinPos(matrix)
+    len1D = int(math.sqrt(len(matrix)))
+    all = []
+    for row in range(minPos[0], minPos[0] + len1D):
+        currRow = []
+        for col in range(minPos[1], minPos[1] + len1D):
+            newEl: MatrixVal = matrix[toKey(row, col)]
+            newMatrix = newEl['chosen_mutation']['matrix']
+            assert len(newMatrix) == 10
+            print('newMatrix', '\n' + matrixToString(newMatrix), 'newMatrix[...]',
+                  '\n' + matrixToString(newMatrix[1:-1, 1:-1]))
+            currRow = np.concatenate((currRow, newMatrix[1:-1, 1:-1]), axis=0) if len(currRow) else newMatrix[1:-1,
+                                                                                                    1:-1]
+        all = np.concatenate((all, currRow), axis=1) if len(all) else currRow
+
+    print('fullMergedMatrix', '\n' + matrixToString(all))
+    return all
+
+
+def matrixToString(matrix: np.array):
+    asList = matrix.tolist()
+    result = '\n'.join(mapl(''.join, asList))
+    # print('matrixToString\n', matrix, '\nresult\n', result, )
+    return result
+
+
+assert matrixToString(np.array([['1', '2'], ['3', '4']])) == '12\n34'
+
+import re
+import regex
+
+
 def part2(input):
-    pass
+    matrix = arrangeMatrix(input)
+    mergedMatrix = mergeMatrix(matrix)
+    print('len matrix', len(matrix))
+    print('shape mergedMatrix', (mergedMatrix.shape))
+    monster = '''                  # 
+#    ##    ##    ###
+ #  #  #  #  #  #   '''
+    monsterNumber = len(re.findall('#', monster))
+    monsterRegexes = createMonsterRegexes(monster, mergedMatrix.shape[0])
+    mutatedMatrixStrings = mapl(matrixToString, map(lambda m: m['matrix'], getMutations(matrixToString(mergedMatrix))))
+    maxMonsters = 0
+    chosenMutation = mutatedMatrixStrings[0]
+    for mutatedMatrixString in mutatedMatrixStrings:
+        nbMonsters = findMonsters(monsterRegexes, mutatedMatrixString)
+        print('mutatedMatrixString', '\n' + mutatedMatrixString)
+        if (nbMonsters > maxMonsters):
+            chosenMutation = mutatedMatrixString
+            maxMonsters = nbMonsters
+    print('chosenMutation', chosenMutation)
+    print('monsterNumber', monsterNumber)
+    print('maxMonsters', maxMonsters)
+    roughness = len(re.findall('#', mutatedMatrixString)) - maxMonsters * monsterNumber
+    print('roughness', roughness)
+    return roughness
+
+
+def createMonsterRegexes(monster, rowLen):
+    allRegexes = []
+    monsterRowLen = len(monster.splitlines()[0])
+    print('monsterRowLen', monsterRowLen)
+    template = 'S' + monster.replace(' ', '.').replace('\n', 'E\nS') + 'E'
+    startOptions = rowLen - monsterRowLen
+    print('range(startOptions)', list(range(startOptions)))
+    for startLen in range(startOptions + 1):
+        sR = '.{' + str(startLen) + '}'
+        eR = '.{' + str(startOptions - startLen) + '}'
+        newTemplate = template.replace('S', sR).replace('E', eR)
+        allRegexes.append(newTemplate)
+    print('allRegexes', allRegexes)
+    return allRegexes
+
+
+def findMonsters(monsterRegexes, mutatedMatrixString):
+    total = 0
+    for monsterRegex in monsterRegexes:
+        nb = len(regex.findall(monsterRegex, mutatedMatrixString, overlapped=True))
+        assert nb == len(re.findall(monsterRegex, mutatedMatrixString))
+        total += nb
+    return total
 
 
 if __name__ == '__main__':
@@ -196,6 +287,6 @@ if __name__ == '__main__':
     part1_r = part1(rInput)
     print(['part1 real', part1_r])
     assert part1_r == 15670959891893
-    # assert part2(tInput) == 2
-    # part2_r = part2(rInput)
-    # print(['part2 real', part2_r])
+    assert part2(tInput) == 273
+    part2_r = part2(rInput)
+    print(['part2 real', part2_r])
