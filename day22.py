@@ -39,18 +39,43 @@ def playTillFinishedPart1(p1Cards, p2Cards):
     return mostCards
 
 
+def p1WinsRec(p1Card, p1Cards, p2Card, p2Cards):
+    if p1Card > len(p1Cards) or p2Card > len(p2Cards):
+        return p1Card > p2Card
+    return playTillFinishedPart2(p1Cards[:p1Card], p2Cards[:p2Card])[0]
+
+
+def configToKey(p1Cards, p2Cards):
+    return str([p1Cards, p2Cards])
+
+
+alreadySeenConfigSet = set()
+
+
 def playTillFinishedPart2(p1Cards, p2Cards):
     while len(p1Cards) and len(p2Cards):
-        break
-    mostCards = p1Cards if len(p1Cards) > len(p2Cards) else p2Cards
-    return mostCards
+        newConfigKey = configToKey(p1Cards, p2Cards)
+        if newConfigKey in alreadySeenConfigSet:
+            return True, p1Cards
+        alreadySeenConfigSet.add(newConfigKey)
+        p1Card = p1Cards.pop()
+        p2Card = p2Cards.pop()
+        if p1WinsRec(p1Card, p1Cards, p2Card, p2Cards):
+            p1Cards.insert(0, p1Card)
+            p1Cards.insert(0, p2Card)
+        else:
+            p2Cards.insert(0, p2Card)
+            p2Cards.insert(0, p1Card)
+    p1Wins = len(p1Cards) > len(p2Cards)
+    mostCards = p1Cards if p1Wins else p2Cards
+    return p1Wins, mostCards
 
 
 def part2(input):
     p1Cards, p2Cards = parseCards(input)
-    mostCards = playTillFinishedPart2(p1Cards, p2Cards)
+    (_, mostCards) = playTillFinishedPart2(p1Cards, p2Cards)
     result = sum([val * (i + 1) for (i, val) in enumerate(mostCards)])
-    print('p1res', result)
+    print('p2res', result)
     return result
 
 
@@ -62,6 +87,14 @@ if __name__ == '__main__':
     part1_r = part1(rInput)
     print(['part1 real', part1_r])
     assert part1_r == 31308
+    assert part2('''Player 1:
+43
+19
+
+Player 2:
+2
+29
+14''') != None
     assert part2(tInput) == 291
     part2_r = part2(rInput)
     print(['part2 real', part2_r])
