@@ -1,4 +1,5 @@
 import time
+from collections import deque
 
 from util import mapl
 
@@ -41,14 +42,22 @@ def playTillFinishedPart1(p1Cards, p2Cards):
     return mostCards
 
 
-def p1WinsRec(p1Card, p1Cards, p2Card, p2Cards, configKey):
-    if p1Card > len(p1Cards) or p2Card > len(p2Cards):
+def p1WinsRec(p1Card, p1Cards: deque, p2Card, p2Cards: deque, configKey):
+    len1 = len(p1Cards)
+    len2 = len(p2Cards)
+    if p1Card > len1 or p2Card > len2:
         return p1Card > p2Card
 
     if configKey in solutionCache:
         # print('already seen config,returning cached val:', solutionCache[configKey], len(p1Cards), len(p2Cards))
         return solutionCache[configKey]
-    p1Wins, _ = playTillFinishedPart2(p1Cards[-p1Card:], p2Cards[-p2Card:])
+    p1Cards = p1Cards.copy()
+    for _ in range(len1 - p1Card):
+        p1Cards.popleft()
+    p2Cards = p2Cards.copy()
+    for _ in range(len2 - p2Card):
+        p2Cards.popleft()
+    p1Wins, _ = playTillFinishedPart2(p1Cards, p2Cards)
     # print('p1Wins rec', p1Wins)
     return p1Wins
 
@@ -89,8 +98,8 @@ def playTillFinishedPart2(p1Cards, p2Cards):
         else:
             solutionCache[newConfigKey] = False
             # print('p2 Wins round', round)
-            p2Cards.insert(0, p2Card)
-            p2Cards.insert(0, p1Card)
+            p2Cards.appendleft(p2Card)
+            p2Cards.appendleft(p1Card)
     p1Wins = len(p1Cards) > len(p2Cards)
     mostCards = p1Cards if p1Wins else p2Cards
     return p1Wins, mostCards
@@ -99,6 +108,8 @@ def playTillFinishedPart2(p1Cards, p2Cards):
 def part2(input):
     start = time.time()
     p1Cards, p2Cards = parseCards(input)
+    p1Cards = deque(p1Cards)
+    p2Cards = deque(p2Cards)
     (_, mostCards) = playTillFinishedPart2(p1Cards, p2Cards)
     result = sum([int(val) * (i + 1) for (i, val) in enumerate(mostCards)])
     print('p2res', result)
