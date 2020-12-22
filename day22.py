@@ -1,3 +1,5 @@
+import time
+
 from util import mapl
 
 tInput = open('day22-testinput.txt').read().strip()
@@ -51,25 +53,28 @@ def configToKey(p1Cards, p2Cards):
     return str([p1Cards, p2Cards])
 
 
-alreadySeenConfigSet = set()
-
-
 def playTillFinishedPart2(p1Cards, p2Cards):
-    print('recursing into', [p1Cards, p2Cards])
+    alreadySeenConfigSet = set()
+    # print('recursing into', [p1Cards, p2Cards])
     round = 0
     while len(p1Cards) and len(p2Cards):
         round += 1
-        print('Doing round', round)
+        # print('Doing round', round)
+        # print("Player 1's deck:", list(reversed(p1Cards)))
+        # print("Player 2's deck:", list(reversed(p2Cards)))
         newConfigKey = configToKey(p1Cards, p2Cards)
         if newConfigKey in alreadySeenConfigSet:
+            # print('already seen config, letting p1 win')
             return True, p1Cards
         alreadySeenConfigSet.add(newConfigKey)
         p1Card = p1Cards.pop()
         p2Card = p2Cards.pop()
         if p1WinsRec(p1Card, p1Cards, p2Card, p2Cards):
+            # print('p1 Wins round', round)
             p1Cards.insert(0, p1Card)
             p1Cards.insert(0, p2Card)
         else:
+            # print('p2 Wins round', round)
             p2Cards.insert(0, p2Card)
             p2Cards.insert(0, p1Card)
     p1Wins = len(p1Cards) > len(p2Cards)
@@ -78,10 +83,13 @@ def playTillFinishedPart2(p1Cards, p2Cards):
 
 
 def part2(input):
+    start = time.time()
     p1Cards, p2Cards = parseCards(input)
     (_, mostCards) = playTillFinishedPart2(p1Cards, p2Cards)
     result = sum([val * (i + 1) for (i, val) in enumerate(mostCards)])
     print('p2res', result)
+    end = time.time()
+    print('time', (end - start))
     return result
 
 
@@ -93,14 +101,7 @@ if __name__ == '__main__':
     part1_r = part1(rInput)
     print(['part1 real', part1_r])
     assert part1_r == 31308
-    assert part2('''Player 1:
-43
-19
-
-Player 2:
-2
-29
-14''') != None
+    # assert part2('Player 1:\n43\n19\n\nPlayer 2:\n2\n29\n14') != None
     assert part2(tInput) == 291
     part2_r = part2(rInput)
     print(['part2 real', part2_r])
