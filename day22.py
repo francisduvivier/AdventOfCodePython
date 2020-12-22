@@ -13,13 +13,13 @@ def parseCards(input):
     p2Cards: list[int] = p2CardStr.strip().splitlines()
     p1Cards.reverse()
     p2Cards.reverse()
-    return mapl(int, p1Cards), mapl(int, p2Cards)
+    return p1Cards, p2Cards
 
 
 def part1(input):
     p1Cards, p2Cards = parseCards(input)
     mostCards = playTillFinishedPart1(p1Cards, p2Cards)
-    result = cardsToKey(mostCards)
+    result = sum([int(val) * (i + 1) for (i, val) in enumerate(mostCards)])
     print('p1res', result)
     return result
 
@@ -28,10 +28,10 @@ def playTillFinishedPart1(p1Cards, p2Cards):
     while len(p1Cards) and len(p2Cards):
         p1Card = p1Cards.pop()
         p2Card = p2Cards.pop()
-        if p1Card > p2Card:
+        if int(p1Card) > int(p2Card):
             p1Cards.insert(0, p1Card)
             p1Cards.insert(0, p2Card)
-        elif p1Card < p2Card:
+        elif int(p1Card) < int(p2Card):
             p2Cards.insert(0, p2Card)
             p2Cards.insert(0, p1Card)
         else:
@@ -54,7 +54,7 @@ def p1WinsRec(p1Card, p1Cards, p2Card, p2Cards, configKey):
 
 
 def configToKey(p1Cards, p2Cards):
-    return str(cardsToKey(p1Cards)) + str(cardsToKey(p2Cards))
+    return ','.join(p1Cards) + ';'.join(p2Cards)
 
 
 maxRound = 0
@@ -81,7 +81,7 @@ def playTillFinishedPart2(p1Cards, p2Cards):
         alreadySeenConfigSet.add(newConfigKey)
         p1Card = p1Cards.pop()
         p2Card = p2Cards.pop()
-        if p1WinsRec(p1Card, p1Cards, p2Card, p2Cards, newConfigKey):
+        if p1WinsRec(int(p1Card), p1Cards, int(p2Card), p2Cards, newConfigKey):
             solutionCache[newConfigKey] = True
             # print('p1 Wins round', round)
             p1Cards.insert(0, p1Card)
@@ -100,15 +100,11 @@ def part2(input):
     start = time.time()
     p1Cards, p2Cards = parseCards(input)
     (_, mostCards) = playTillFinishedPart2(p1Cards, p2Cards)
-    result = cardsToKey(mostCards)
+    result = sum([int(val) * (i + 1) for (i, val) in enumerate(mostCards)])
     print('p2res', result)
     end = time.time()
     print('time', (end - start))
     return result
-
-
-def cardsToKey(cards):
-    return sum([val * (i + 1) for (i, val) in enumerate(cards)])
 
 
 # print('parseCards(tInput)', parseCards(tInput))
