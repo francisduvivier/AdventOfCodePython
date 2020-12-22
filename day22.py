@@ -42,7 +42,9 @@ def playTillFinishedPart1(p1Cards, p2Cards):
 def p1WinsRec(p1Card, p1Cards, p2Card, p2Cards):
     if p1Card > len(p1Cards) or p2Card > len(p2Cards):
         return p1Card > p2Card
-    return playTillFinishedPart2(p1Cards[:p1Card], p2Cards[:p2Card])[0]
+    p1Wins, cards = playTillFinishedPart2(p1Cards[-p1Card:], p2Cards[-p2Card:])
+    # print('p1Wins rec', p1Wins)
+    return p1Wins
 
 
 def configToKey(p1Cards, p2Cards):
@@ -53,7 +55,11 @@ alreadySeenConfigSet = set()
 
 
 def playTillFinishedPart2(p1Cards, p2Cards):
+    print('recursing into', [p1Cards, p2Cards])
+    round = 0
     while len(p1Cards) and len(p2Cards):
+        round += 1
+        print('Doing round', round)
         newConfigKey = configToKey(p1Cards, p2Cards)
         if newConfigKey in alreadySeenConfigSet:
             return True, p1Cards
