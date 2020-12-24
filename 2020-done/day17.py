@@ -2,7 +2,7 @@ tInput = open('day17-testinput.txt').read().strip().splitlines()
 rInput = open('day17-input.txt').read().strip().splitlines()
 
 
-def findNeighbors(active):
+def getAdjacents(active):
     result = []
     z2Options = [0, -1, 1] if 'z2' in active else [0]
     for row in [-1, 0, 1]:
@@ -24,8 +24,8 @@ toKey = str
 def doCycle(actives):
     countMap = dict()
     for active in actives:
-        neighbors = findNeighbors(active)
-        for nb in neighbors:
+        adjacents = getAdjacents(active)
+        for nb in adjacents:
             key = toKey(nb)
             if key in countMap:
                 countMap[key]['count'] += 1
