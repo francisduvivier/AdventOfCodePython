@@ -43,31 +43,16 @@ def part1(input):
 
 
 def isSafe2(reportLine):
-    prevVal = None
-    direction = reportLine[0] > reportLine[1]
-    unsafes = 0
-
-    for val in reportLine:
-        if prevVal == val:
-            unsafes += 1
-            continue
-        if prevVal is not None:
-            newDirection = prevVal > val
-            if newDirection != direction:
-                unsafes += 1
-                continue
-            if abs(prevVal - val) > 3:
-                unsafes += 1
-                continue
-        prevVal = val
-    return unsafes <= 1
-
+    for i in range(len(reportLine)):
+        if isSafe(reportLine[:i]+reportLine[i+1:]):
+            return True
+    return False
 
 def part2(input):
     parsed = parseInput(input)
     safeReports = 0
     for reportLine in parsed:
-        if isSafe2(reportLine) or isSafe(reportLine[1:]):
+        if isSafe2(reportLine):
             safeReports += 1
 
     print(safeReports)
