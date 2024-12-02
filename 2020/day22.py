@@ -1,10 +1,8 @@
 import time
 
-from util import mapl
 
 tInput = open('day22-testinput.txt').read().strip()
 rInput = open('day22-input.txt').read().strip()
-import numpy as np
 
 
 def parseCards(input):
