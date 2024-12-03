@@ -1,17 +1,14 @@
 import re
-import time
+
+from util import map_to_numbers, sub_map_to_numbers, mapl
 
 tInput = open('day03-testinput.txt').read().strip()
 rInput = open('day03-input.txt').read().strip()
 
 
-def mapToNumbers(arr):
-    return list(map(int, arr))
-
-
 def parseInput(input):
     multiplications = re.findall(r'mul\((\d+),(\d+)\)', input)
-    return list(map(mapToNumbers, multiplications))
+    return sub_map_to_numbers(multiplications)
 
 
 def part1(input):
@@ -25,10 +22,9 @@ part1(rInput)
 
 
 def parseInput2(input):
-    multiplications = re.findall(r'((mul)\((\d+),(\d+)\)|(do|don\'t)\(\))', input)
-    return list(
-        map(lambda x: {"op": x[1] if x[1] == 'mul' else x[4], "vals": mapToNumbers(x[2:4]) if x[1] == 'mul' else []},
-            multiplications))
+    intructions = re.findall(r'((mul)\((\d+),(\d+)\)|(do|don\'t)\(\))', input)
+    return mapl(lambda x: {"op": x[1] if x[1] == 'mul' else x[4], "vals": map_to_numbers(x[2:4]) if x[1] == 'mul' else []},
+            intructions)
 
 
 def part2(input):
