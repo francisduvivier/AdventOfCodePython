@@ -73,3 +73,27 @@ def find_horizontals(letter_matrix, search_string):
 
 part1(tInput)
 part1(rInput)
+
+
+def find_XMAS(parsed):
+    matches = 0
+    for row in range(len(parsed)):
+        for col in range(len(parsed[row])):
+            if col + 2 > len(parsed[row]):
+                continue
+            if row + 2 > len(parsed):
+                continue
+            slice = np.array(parsed)[row:row + 3,col:col + 3]
+            if find_diagonals(slice, 'MAS') == 2:
+                matches += 1
+    return matches
+
+
+def part2(input):
+    parsed = parseInput(input)
+    matches = find_XMAS(parsed)
+    print(matches)
+
+
+part2(tInput)
+part2(rInput)
