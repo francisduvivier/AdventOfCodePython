@@ -16,7 +16,6 @@ def parseInput(input):
 
 
 def find_horizontal(letterMatrix, word):
-    currMatch = ''
     matches = 0
     for i in range(len(letterMatrix)):
         currMatch = ''
@@ -54,14 +53,14 @@ def diagonals(parsed):
 
     cols = len(parsed[0])
     for i in range(1, cols):
-        diagonals.append(np.diagonal(parsed, -i))
+        diagonals.append(np.diagonal(parsed, i))
     return diagonals
 
 
 def find_diagonals(parsed, search_string):
     matches = 0
     matches += find_horizontals(diagonals(parsed), search_string)
-    matches += find_horizontals(diagonals(np.flip(parsed)), search_string)
+    matches += find_horizontals(diagonals(np.fliplr(parsed)), search_string)
     return matches
 
 
