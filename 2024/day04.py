@@ -12,7 +12,7 @@ rInput = open('day04-input.txt').read().strip()
 def parseInput(input):
     lines = input.splitlines()
     letters = mapl(lambda line: [letter for letter in line], lines)
-    return letters
+    return np.array(letters)
 
 
 def find_horizontal(letterMatrix, word):
@@ -83,7 +83,7 @@ def find_XMAS(parsed):
                 continue
             if row + 2 > len(parsed):
                 continue
-            slice = np.array(parsed)[row:row + 3,col:col + 3]
+            slice = parsed[row:row + 3,col:col + 3]
             if find_diagonals(slice, 'MAS') == 2:
                 matches += 1
     return matches
