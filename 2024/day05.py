@@ -38,6 +38,8 @@ def follows_rules(sequence, rules):
 
     return True
 
+
+
 def part1(input):
     (rules, sequences) = parseInput(input)
 
@@ -51,3 +53,38 @@ def part1(input):
 
 part1(tInput)
 part1(rInput)
+
+def fix(sequence, rules):
+    fixed_sequence = []
+    done_numbers_set = set()
+    key_is_before_set_map = create_before_map(rules)
+    for el in sequence:
+        must_be_after_set = key_is_before_set_map[el] if el in key_is_before_set_map else set()
+        broken_rules = must_be_after_set.intersection(done_numbers_set)
+
+        if len(broken_rules)>0:
+            first_broken_rule_index = 0
+            for i in range(len(fixed_sequence)):
+                if fixed_sequence[i] in broken_rules:
+                    first_broken_rule_index = i
+            fixed_sequence = fixed_sequence[:first_broken_rule_index -1] + [el] + fixed_sequence[first_broken_rule_index:]
+        else:
+            fixed_sequence.append(el)
+        done_numbers_set.add(el)
+
+    return fixed_sequence
+
+def part2(input):
+    (rules, sequences) = parseInput(input)
+
+    result = 0
+    for sequence in sequences:
+        if not follows_rules(sequence, rules):
+            sequence = fix(sequence, rules)
+            while not follows_rules(sequence, rules):
+                sequence = fix(sequence, rules)
+            result += int(sequence[int((len(sequence) - 1) / 2)])
+    print(result)
+
+part2(tInput)
+part2(rInput)
