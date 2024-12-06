@@ -24,4 +24,4 @@ class GridRobot:
         self.dxy = DIRS[(DIRS.index(self.dxy) + 1) % len(DIRS)]
 
     def __str__(self):
-        return f'[{self.x}, {self.y}]'
+        return f'{self.dxy},dx{self.x},y{self.y}]'

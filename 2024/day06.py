@@ -31,7 +31,7 @@ def part1(input):
     char_matrix = parseInput(input)
     robot = find_robot(char_matrix)
     visited_locations = set()
-    visited_locations.add(str(robot))
+    visited_locations.add(robot_x_y(robot))
     while True:
         robot.move_forward()
         while not out_of_bounds(char_matrix, robot) and char_matrix[robot.y][robot.x] == '#':
@@ -42,9 +42,13 @@ def part1(input):
             break
         # print(str(robot))
         char_matrix[robot.y][robot.x] = 'X'
-        visited_locations.add(str(robot))
+        visited_locations.add(robot_x_y(robot))
 
     print(len(visited_locations))
+
+
+def robot_x_y(robot):
+    return str(robot.x) + ',' + str(robot.y)
 
 
 def out_of_bounds(char_matrix, robot):
@@ -53,3 +57,42 @@ def out_of_bounds(char_matrix, robot):
 
 part1(tInput)
 part1(rInput)
+
+def check_loop(char_matrix, extra_y, extra_x):
+    robot = find_robot(char_matrix)
+    char_matrix=  np.array(char_matrix)
+    char_matrix[extra_y][extra_x] = '#'
+    visited_locations = set()
+    visited_locations.add(str(robot))
+    while True:
+        robot.move_forward()
+        while not out_of_bounds(char_matrix, robot) and char_matrix[robot.y][robot.x] == '#':
+            robot.move_backward()
+            robot.turn_right()
+            robot.move_forward()
+        if out_of_bounds(char_matrix, robot):
+            return 0
+        # print(str(robot))
+        char_matrix[robot.y][robot.x] = 'X'
+        len_before = len(visited_locations)
+        visited_locations.add(str(robot))
+        if len_before == len(visited_locations):
+            print('found a loop')
+            return 1
+
+def part2(input):
+    char_matrix = parseInput(input)
+    loops = 0
+    for y in range(len(char_matrix)):
+        for x in range(len(char_matrix[y])):
+            char = char_matrix[y][x]
+            if char != '#' and char != '^':
+                loops+=check_loop(char_matrix, y, x)
+
+    print(loops)
+    return loops
+
+
+
+assert part2(tInput) == 6
+part2(rInput)
