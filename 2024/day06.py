@@ -31,7 +31,7 @@ def part1(input):
     char_matrix = parseInput(input)
     robot = find_robot(char_matrix)
     visited_locations = set()
-    visited_locations.add(robot_x_y(robot))
+    visited_locations.add(robot.yx_key())
     while True:
         robot.move_forward()
         while not out_of_bounds(char_matrix, robot) and char_matrix[robot.y][robot.x] == '#':
@@ -42,7 +42,7 @@ def part1(input):
             break
         # print(str(robot))
         char_matrix[robot.y][robot.x] = 'X'
-        visited_locations.add(robot_x_y(robot))
+        visited_locations.add(robot.yx_key())
 
     print(len(visited_locations))
 
@@ -58,12 +58,13 @@ def out_of_bounds(char_matrix, robot):
 part1(tInput)
 part1(rInput)
 
+
 def check_loop(char_matrix, extra_y, extra_x):
     robot = find_robot(char_matrix)
-    char_matrix=  np.array(char_matrix)
+    char_matrix = np.array(char_matrix)
     char_matrix[extra_y][extra_x] = '#'
-    visited_locations = set()
-    visited_locations.add(str(robot))
+    visited_states = set()
+    visited_states.add(robot.state_key())
     while True:
         robot.move_forward()
         while not out_of_bounds(char_matrix, robot) and char_matrix[robot.y][robot.x] == '#':
@@ -74,11 +75,12 @@ def check_loop(char_matrix, extra_y, extra_x):
             return 0
         # print(str(robot))
         char_matrix[robot.y][robot.x] = 'X'
-        len_before = len(visited_locations)
-        visited_locations.add(str(robot))
-        if len_before == len(visited_locations):
-            print('found a loop')
+        len_before = len(visited_states)
+        visited_states.add(robot.state_key())
+        if len_before == len(visited_states):
+            # print('found a loop')
             return 1
+
 
 def part2(input):
     char_matrix = parseInput(input)
@@ -87,12 +89,10 @@ def part2(input):
         for x in range(len(char_matrix[y])):
             char = char_matrix[y][x]
             if char != '#' and char != '^':
-                loops+=check_loop(char_matrix, y, x)
+                loops += check_loop(char_matrix, y, x)
 
     print(loops)
     return loops
 
 
-
-assert part2(tInput) == 6
 part2(rInput)

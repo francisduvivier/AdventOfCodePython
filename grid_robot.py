@@ -6,22 +6,28 @@ DIR = {
 }
 DIRS = [DIR[key] for key in DIR.keys()]
 
+
 class GridRobot:
-    def __init__(self, x, y, dxy: {'dx': int, 'dy': int}):
+    def __init__(self, x, y, dyx: {'dy': int, 'dx': int}):
         self.x = x
         self.y = y
-        self.dxy = dxy
+        self.dyx = dyx
 
     def move_forward(self):
-        self.x += self.dxy['dx']
-        self.y += self.dxy['dy']
+        self.x += self.dyx['dx']
+        self.y += self.dyx['dy']
 
     def move_backward(self):
-        self.x += -self.dxy['dx']
-        self.y += -self.dxy['dy']
+        self.x += -self.dyx['dx']
+        self.y += -self.dyx['dy']
 
     def turn_right(self):
-        self.dxy = DIRS[(DIRS.index(self.dxy) + 1) % len(DIRS)]
+        self.dyx = DIRS[(DIRS.index(self.dyx) + 1) % len(DIRS)]
 
     def __str__(self):
-        return f'{self.dxy},dx{self.x},y{self.y}]'
+        return f'dyx{self.dyx},x{self.y},y{self.x}]'
+
+    def state_key(self):
+        return f'{self.dyx},{self.yx_key()}'
+    def yx_key(self):
+        return f'{self.y},{self.x}]'
