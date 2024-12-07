@@ -6,7 +6,7 @@ def mapToNumbers(arr):
     return list(map(int, arr))
 
 def parseInput(input):
-    lines = input.split('\n')
+    lines = input.splitlines()
     lineToNumbers = lambda line: mapToNumbers(line.split(' '))
     numbersMatrix = list(map(lineToNumbers, lines))
     return numbersMatrix
@@ -14,7 +14,9 @@ def parseInput(input):
 
 def part1(input):
     parsed = parseInput(input)
-    print(parsed)
+    result = sum(parsed[0])
+    print(result)
+    return result
 
-part1(tInput)
+assert part1(tInput) == 20
 part1(rInput)
