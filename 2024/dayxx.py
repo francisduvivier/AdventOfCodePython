@@ -1,13 +1,13 @@
 import time
 
+from util import map_to_numbers
+
 tInput = open('dayxx-testinput.txt').read().strip()
 rInput = open('dayxx-input.txt').read().strip()
-def mapToNumbers(arr):
-    return list(map(int, arr))
 
 def parseInput(input):
     lines = input.splitlines()
-    lineToNumbers = lambda line: mapToNumbers(line.split(' '))
+    lineToNumbers = lambda line: map_to_numbers(line.split(' '))
     numbersMatrix = list(map(lineToNumbers, lines))
     return numbersMatrix
 
