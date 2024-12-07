@@ -45,6 +45,7 @@ def part1(input):
         visited_locations.add(robot.yx_key())
 
     print(len(visited_locations))
+    return len(visited_locations)
 
 
 def robot_x_y(robot):
@@ -55,7 +56,7 @@ def out_of_bounds(char_matrix, robot):
     return robot.y < 0 or robot.y >= len(char_matrix) or robot.x < 0 or robot.x >= len(char_matrix[robot.y])
 
 
-part1(tInput)
+assert part1(tInput) == 41
 part1(rInput)
 
 
@@ -95,4 +96,5 @@ def part2(input):
     return loops
 
 
+assert part2(tInput) == 6
 part2(rInput)
