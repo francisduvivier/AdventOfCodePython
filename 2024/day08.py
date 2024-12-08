@@ -34,10 +34,7 @@ def get_location_list_for_char_map(char_matrix: np.array(np.array(str))) -> dict
             char_map[char].append((row, col))
     return char_map
 
-
-def part1(input):
-    char_matrix = parseInput(input)
-    location_list_for_char_map = get_location_list_for_char_map(char_matrix)
+def find_antinodes(char_matrix, location_list_for_char_map):
     antinodes = set()
     # Now we need to loop over all pairs of locations for each char
     for (char, locations) in location_list_for_char_map.items():
@@ -54,7 +51,14 @@ def part1(input):
                 antinode_row_col = (location2[0] + dy, location2[1] + dx)
                 if not is_out_of_bounds(antinode_row_col, char_matrix):
                     antinodes.add(tuple_to_key(antinode_row_col))
-                    print(char, antinode_row_col)
+                    # print(char, antinode_row_col)
+    return antinodes
+
+
+def part1(input):
+    char_matrix = parseInput(input)
+    location_list_for_char_map = get_location_list_for_char_map(char_matrix)
+    antinodes = find_antinodes(char_matrix, location_list_for_char_map)
     result = len(antinodes)
     print(result)
     return result
@@ -79,26 +83,12 @@ part1(rInput)
 def part2(input):
     char_matrix = parseInput(input)
     location_list_for_char_map = get_location_list_for_char_map(char_matrix)
-    antinodes = set()
-    # Now we need to loop over all pairs of locations for each char
-    for (char, locations) in location_list_for_char_map.items():
-        if char == '.':
-            continue
-        for location in locations:
-            for location2 in locations:
-                if location == location2:
-                    continue
-                # print(location, location2)
-                # Now we need to calculate the dx and dy
-                dx = location2[1] - location[1]
-                dy = location2[0] - location[0]
-                antinode_row_col = (location2[0] + dy, location2[1] + dx)
-                if not is_out_of_bounds(antinode_row_col, char_matrix):
-                    antinodes.add(tuple_to_key(antinode_row_col))
-                    print(char, antinode_row_col)
+    antinodes = find_antinodes(char_matrix, location_list_for_char_map)
     result = len(antinodes)
     print(result)
     return result
+
+
 
 
 assert part2(tInput2) == 9
