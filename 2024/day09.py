@@ -45,8 +45,8 @@ def part1(input):
     return result
 
 
-# assert part1(tInput) == 1928
-# part1(rInput)
+assert part1(tInput) == 1928
+assert part1(rInput) == 6216544403458
 
 
 def get_free_space_size(all_blocks, left_index):
@@ -124,4 +124,4 @@ def part2(input):
 
 
 assert part2(tInput) == 2858
-part2(rInput)
+assert part2(rInput) == 6237075041489
