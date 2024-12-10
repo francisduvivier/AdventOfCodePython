@@ -4,8 +4,8 @@ import numpy as np
 
 from grid_robot import DIR, GridRobot
 
-tInput = open('day06-testinput.txt').read().strip()
-rInput = open('day06-input.txt').read().strip()
+tInput = open('day10-testinput.txt').read().strip()
+rInput = open('day10-input.txt').read().strip()
 
 
 def mapToNumbers(arr):
@@ -57,43 +57,3 @@ def out_of_bounds(char_matrix, robot):
 
 assert part1(tInput) == 41
 part1(rInput)
-
-
-def check_loop(char_matrix, extra_y, extra_x):
-    robot = find_robot(char_matrix)
-    char_matrix = np.array(char_matrix)
-    char_matrix[extra_y][extra_x] = '#'
-    visited_states = set()
-    visited_states.add(robot.state_key())
-    while True:
-        robot.move_forward()
-        while not out_of_bounds(char_matrix, robot) and char_matrix[robot.y][robot.x] == '#':
-            robot.move_backward()
-            robot.turn_right()
-            robot.move_forward()
-        if out_of_bounds(char_matrix, robot):
-            return 0
-        # print(str(robot))
-        char_matrix[robot.y][robot.x] = 'X'
-        len_before = len(visited_states)
-        visited_states.add(robot.state_key())
-        if len_before == len(visited_states):
-            # print('found a loop')
-            return 1
-
-
-def part2(input):
-    char_matrix = parseInput(input)
-    loops = 0
-    for y in range(len(char_matrix)):
-        for x in range(len(char_matrix[y])):
-            char = char_matrix[y][x]
-            if char != '#' and char != '^':
-                loops += check_loop(char_matrix, y, x)
-
-    print(loops)
-    return loops
-
-
-assert part2(tInput) == 6
-part2(rInput)
