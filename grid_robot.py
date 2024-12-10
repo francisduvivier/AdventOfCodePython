@@ -8,7 +8,7 @@ DIRS = [DIR[key] for key in DIR.keys()]
 
 
 class GridRobot:
-    def __init__(self, x, y, dyx: {'dy': int, 'dx': int}):
+    def __init__(self, x, y, dyx: {'dy': int, 'dx': int} = DIR['^']):
         self.x = x
         self.y = y
         self.dyx = dyx
@@ -29,5 +29,6 @@ class GridRobot:
 
     def state_key(self):
         return f'{self.dyx},{self.yx_key()}'
+
     def yx_key(self):
         return f'{self.y},{self.x}]'

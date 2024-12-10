@@ -2,8 +2,9 @@ import time
 
 import numpy as np
 
-from grid_robot import DIR, GridRobot
+from grid_robot import DIR, DIRS, GridRobot
 
+tInput0 = open('day10-testinput0.txt').read().strip()
 tInput = open('day10-testinput.txt').read().strip()
 rInput = open('day10-input.txt').read().strip()
 
@@ -14,46 +15,45 @@ def mapToNumbers(arr):
 
 def parseInput(input):
     lines = input.split('\n')
-    char_matrix = np.array([[char for char in line] for line in lines])
-    return char_matrix
-
-
-def find_robot(char_matrix):
-    ROBOT_START_CHAR = '^'
-    for y, row in enumerate(char_matrix):
-        for x, char in enumerate(row):
-            if char == ROBOT_START_CHAR:
-                return GridRobot(x, y, DIR[ROBOT_START_CHAR])
+    int_matrix = np.array([[int(char) for char in line] for line in lines])
+    return int_matrix
 
 
 def part1(input):
-    char_matrix = parseInput(input)
-    robot = find_robot(char_matrix)
-    visited_locations = set()
-    visited_locations.add(robot.yx_key())
-    while True:
-        robot.move_forward()
-        while not out_of_bounds(char_matrix, robot) and char_matrix[robot.y][robot.x] == '#':
-            robot.move_backward()
-            robot.turn_right()
-            robot.move_forward()
-        if out_of_bounds(char_matrix, robot):
-            break
-        # print(str(robot))
-        char_matrix[robot.y][robot.x] = 'X'
-        visited_locations.add(robot.yx_key())
+    number_matrix = parseInput(input)
+    total_score = 0
+    for y, row in enumerate(number_matrix):
+        for x, char in enumerate(row):
+            if char == 0:
+                zero_location = GridRobot(x, y)
+                total_score += count_reachable_nines(zero_location, number_matrix)
 
-    print(len(visited_locations))
-    return len(visited_locations)
+    print(total_score)
+    return total_score
 
 
-def robot_x_y(robot):
-    return str(robot.x) + ',' + str(robot.y)
+def find_nines_rec(robot_state: GridRobot, int_matrix: np.array, visited_locations: set[int]):
+    if robot_state.yx_key() in visited_locations:
+        return 0
+    visited_locations.add(robot_state.yx_key())
+    if int_matrix[robot_state.y][robot_state.x] == 9:
+        return 1
+    total_score = 0
+    for dir in DIRS:
+        new_robot = GridRobot(robot_state.x, robot_state.y, dir)
+        new_robot.move_forward()
+        if not out_of_bounds(int_matrix, new_robot) and int_matrix[new_robot.y][new_robot.x] == int_matrix[robot_state.y][robot_state.x] + 1:
+            total_score += find_nines_rec(new_robot, int_matrix, visited_locations)
+    return total_score
 
 
-def out_of_bounds(char_matrix, robot):
-    return robot.y < 0 or robot.y >= len(char_matrix) or robot.x < 0 or robot.x >= len(char_matrix[robot.y])
+def count_reachable_nines(zero_location: GridRobot, int_matrix: np.array):
+    return find_nines_rec(zero_location, int_matrix, set())
+
+def out_of_bounds(int_matrix, robot):
+    return robot.y < 0 or robot.y >= len(int_matrix) or robot.x < 0 or robot.x >= len(int_matrix[robot.y])
 
 
-assert part1(tInput) == 41
+assert part1(tInput0) == 2
+assert part1(tInput) == 36
 part1(rInput)
