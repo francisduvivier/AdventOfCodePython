@@ -72,16 +72,13 @@ def part2(input):
         for x, char in enumerate(row):
             if char == 0:
                 zero_location = GridRobot(x, y)
-                total_score += find_trails_rec(zero_location, number_matrix, set())
+                total_score += find_trails_rec(zero_location, number_matrix)
 
     print(total_score)
     return total_score
 
 
-def find_trails_rec(robot_state: GridRobot, int_matrix: np.array, visited_locations: set[int]):
-    if robot_state.yx_key() in visited_locations:
-        return 0
-    visited_locations.add(robot_state.yx_key())
+def find_trails_rec(robot_state: GridRobot, int_matrix: np.array):
     if int_matrix[robot_state.y][robot_state.x] == 9:
         return 1
     total_score = 0
@@ -90,7 +87,7 @@ def find_trails_rec(robot_state: GridRobot, int_matrix: np.array, visited_locati
         new_robot.move_forward()
         if not out_of_bounds(new_robot,
                              int_matrix) and int_matrix[new_robot.y][new_robot.x] == int_matrix[robot_state.y][robot_state.x] + 1:
-            total_score += find_nines_rec(new_robot, int_matrix, set())
+            total_score += find_trails_rec(new_robot, int_matrix)
     return total_score
 
 assert part2(tInput1) == 3
