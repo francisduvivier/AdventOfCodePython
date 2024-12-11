@@ -26,15 +26,50 @@ def blink(stones: list[str]):
     return new_stones
 
 
+blink_map = {}
+
+
+def blink_rec(stone, times):
+    key = to_key(stone, times)
+    if times == 0:
+        return 1
+    if key in blink_map:
+        return blink_map[key]
+    result = sum([blink_rec(blink_part, times - 1) for blink_part in blink([stone])])
+    blink_map[key] = result
+    return result
+
+
+def start_blink_rec(stones, amount):
+    return sum([blink_rec(stone, amount) for stone in stones])
+
+
+def to_key(stone, times):
+    return stone + ',' + str(times)
+
+
+
 def part1(input):
+    print('part1')
     stones = parseInput(input)
     print(stones)
-    for i in range(25):
-        stones = blink(stones)
-    result = len(stones)
+    result = start_blink_rec(stones, 25)
     print(result)
     return result
 
 
 assert part1(tInput) == 55312
 part1(rInput)
+
+def part2(input):
+    print('part2')
+    stones = parseInput(input)
+    print(stones)
+
+    result = start_blink_rec(stones, 75)
+    print(result)
+    return result
+
+
+# assert part2(tInput) == 55312
+part2(rInput)
