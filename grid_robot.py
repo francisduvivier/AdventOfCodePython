@@ -25,10 +25,13 @@ class GridRobot:
         self.dyx = DIRS[(DIRS.index(self.dyx) + 1) % len(DIRS)]
 
     def __str__(self):
-        return f'dyx{self.dyx},x{self.y},y{self.x}]'
+        return f'dyx{self.dyx},x{self.y},y{self.x}'
 
     def state_key(self):
         return f'{self.dyx},{self.yx_key()}'
 
     def yx_key(self):
-        return f'{self.y},{self.x}]'
+        return yx_key(self.y,self.x)
+
+def yx_key(y,x):
+    return f'{y},{x}'
