@@ -70,6 +70,4 @@ def part2(input):
     print(result)
     return result
 
-
-# assert part2(tInput) == 55312
 part2(rInput)
