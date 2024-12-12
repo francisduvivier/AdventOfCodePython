@@ -92,12 +92,14 @@ def find_patches(garden):
 
 
 def find_disconnected_walls(wall_set):
+    print(wall_set)
     walls = [parse_state_key(wall_key) for wall_key in wall_set]
     nb_disconnected = 0
-    for dir in DIR_LETTERS:
+    x_index = 1
+    y_index = 0
+    for dir in ['>', '<']:
         walls_for_dir = [wall for wall in walls if wall[2] == dir]
-        x_index = 1
-        y_index = 0
+        print(walls_for_dir)
         x_values = set([wall[x_index] for wall in walls_for_dir])
         for x in x_values:
             sorted_walls_on_line = sorted([wall for wall in walls_for_dir if wall[x_index] == x],
@@ -108,7 +110,9 @@ def find_disconnected_walls(wall_set):
                     print('found disconnect for dir', dir, 'x', x, 'curr_y', curr_y, '->', sorted_wall[y_index])
                     nb_disconnected += 1
                 curr_y = sorted_wall[y_index]
-
+    for dir in ['^', 'v']:
+        walls_for_dir = [wall for wall in walls if wall[2] == dir]
+        print(walls_for_dir)
         y_values = set([wall[y_index] for wall in walls_for_dir])
         for y in y_values:
             sorted_walls_on_line = sorted([wall for wall in walls_for_dir if wall[y_index] == y],
@@ -117,16 +121,17 @@ def find_disconnected_walls(wall_set):
             for sorted_wall in sorted_walls_on_line:
                 if curr_x != sorted_wall[x_index] - 1:
                     nb_disconnected += 1
-                    print('found disconnect for dir', dir, 'x', x, 'curr_y', curr_y, '->', sorted_wall[y_index])
+                    print('found disconnect for dir', dir, 'y', y, 'curr_x', curr_x, '->', sorted_wall[x_index])
                 curr_x = sorted_wall[x_index]
-
-        print(walls_for_dir)
     return nb_disconnected
 
 
 def calc_price2(patch):
     print('calc_price2: ' + patch['letter'])
-    return find_disconnected_walls(patch["wall_set"])
+    nb_disconnected = find_disconnected_walls(patch["wall_set"])
+    print('nb_disconnected', patch['letter'], nb_disconnected)
+
+    return nb_disconnected * len(patch['tile_set'])
 
 
 def part2(input):
