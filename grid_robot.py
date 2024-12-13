@@ -1,3 +1,5 @@
+import numpy as np
+
 DIR = {
     '^': {'dx': 0, 'dy': -1},
     '>': {'dx': 1, 'dy': 0},
@@ -9,19 +11,26 @@ DIR_LETTERS = [key for key in DIR.keys()]
 
 
 class GridRobot:
-    def __init__(self, x, y, dyx: {'dy': int, 'dx': int} = DIR['^']):
-        self.x = x
-        self.y = y
+    def __init__(self, col, row, dyx: {'dy': int, 'dx': int} = DIR['^'], grid: np.array or None = None, cost_calc_fn = None):
+        self.x = col
+        self.y = row
         self.dyx = dyx
         self.dir_index = DIRS.index(self.dyx)
+        self.grid = grid
+        self.cost = 0
+        self.cost_calc_fn = cost_calc_fn
 
-    def move_forward(self):
-        self.x += self.dyx['dx']
-        self.y += self.dyx['dy']
+    def move_forward(self, amount = 1):
+        self.x += self.dyx['dx'] * amount
+        self.y += self.dyx['dy'] * amount
+        if self.cost_calc_fn:
+            self.cost += self.get_move_cost(amount)
+
+    def get_move_cost(self, amount):
+        return self.cost_calc_fn(self, amount)
 
     def move_backward(self):
-        self.x += -self.dyx['dx']
-        self.y += -self.dyx['dy']
+        return self.move_forward(-1)
 
     def turn_right(self):
         self.dyx = DIRS[(self.dir_index + 1) % len(DIRS)]
@@ -34,6 +43,14 @@ class GridRobot:
 
     def yx_key(self):
         return yx_key(self.y, self.x)
+
+    def out_of_bounds(self):
+        return self.y < 0 or self.y >= len(self.grid) or self.x < 0 or self.x >= len(self.grid[self.y])
+
+    def clone(self):
+        return GridRobot(self.x, self.y, self.dyx, self.grid)
+
+
 
 
 def yx_key(y, x):
