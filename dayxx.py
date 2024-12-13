@@ -9,7 +9,7 @@ real_input = open('dayxx-input.txt').read().strip()
 
 def parse_input(input):
     lines = input.splitlines()
-    line_split_lambda = lambda line: map_to_numbers(line.split(' '))
+    line_split_lambda = lambda line: line.split(' ')
     char_matrix = [line_split_lambda(line) for line in lines]
     numbers_matrix = sub_map_to_numbers(char_matrix)
     return numbers_matrix
