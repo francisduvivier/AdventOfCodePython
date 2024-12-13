@@ -1,22 +1,25 @@
 import time
 
-from util import map_to_numbers
+import numpy as np
 
-tInput = open('dayxx-testinput.txt').read().strip()
-rInput = open('dayxx-input.txt').read().strip()
+from util import map_to_numbers, sub_map_to_numbers
 
-def parseInput(input):
+test_input = open('dayxx-testinput.txt').read().strip()
+real_input = open('dayxx-input.txt').read().strip()
+
+def parse_input(input):
     lines = input.splitlines()
-    lineToNumbers = lambda line: map_to_numbers(line.split(' '))
-    numbersMatrix = list(map(lineToNumbers, lines))
-    return numbersMatrix
+    line_split_lambda = lambda line: map_to_numbers(line.split(' '))
+    char_matrix = [line_split_lambda(line) for line in lines]
+    numbers_matrix = sub_map_to_numbers(char_matrix)
+    return numbers_matrix
 
 
 def part1(input):
-    parsed = parseInput(input)
+    parsed = parse_input(input)
     result = sum(parsed[0])
     print(result)
     return result
 
-assert part1(tInput) == 20
-part1(rInput)
+assert part1(test_input) == 20
+part1(real_input)
