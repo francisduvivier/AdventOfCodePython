@@ -52,35 +52,28 @@ def calc_prize(machine):
     prize_X = machine.prize.X
     prize_Y = machine.prize.Y
     button_A = machine.button_map.A
-    max_a_presses = min(int(prize_X / button_A.X),
-                        int(prize_Y / button_A.Y))
-    cost_A = 0
-    min_cost = None
-    for a_presses in range(max_a_presses):
-        def get_cost_B():
-            if min_cost is not None and cost_A >= min_cost:
-                return
-            if prize_X % button_B.X != 0:
-                return
-            if prize_Y % button_B.Y != 0:
-                return
-            B_presses_for_Y = int(prize_Y / button_B.Y)
-            B_presses_for_X = int(prize_X / button_B.X)
-            if B_presses_for_X != B_presses_for_Y:
-                return
-
-            cost_B = B_presses_for_X * BUTTON_COST.B
-            return cost_B
-
-        cost_B= get_cost_B()
-        if cost_B is not None:
-            total_cost = cost_B + cost_A
-            if min_cost is None or total_cost < min_cost:
-                min_cost = total_cost
-        prize_X -= button_A.X
-        prize_Y -= button_A.Y
-        cost_A += BUTTON_COST.A
-    return min_cost
+    # a*Ax+b*Bx = Px
+    # a*Ay+b*By = Py
+    #
+    # Examples
+    #
+    # Solve the system of equations: x0 + 2 * x1 = 1 and 3 * x0 + 5 * x1 = 2:
+    #
+    # import numpy as np
+    # a = np.array([[1, 2], [3, 5]])
+    # b = np.array([1, 2])
+    # x = np.linalg.solve(a, b)
+    # x
+    left = np.array([[button_A.X, button_B.X],
+                     [button_A.Y, button_B.Y]])
+    right = np.array([prize_X, prize_Y])
+    solutions = np.linalg.solve(left, right)
+    print(solutions)
+    a = round(solutions[0])
+    b = round(solutions[1])
+    if a * button_A.X + b * button_B.X == prize_X and a * button_A.Y + b * button_B.Y == prize_Y:
+        return solutions[0] * BUTTON_COST.A + solutions[1] * BUTTON_COST.B
+    return None
 
 
 def part1(input):
@@ -92,3 +85,19 @@ def part1(input):
 
 assert part1(test_input) == 480
 part1(real_input)
+
+
+def calc_prize2(machine):
+    machine.prize.X = machine.prize.X + 10_000_000_000_000
+    machine.prize.Y = machine.prize.Y + 10_000_000_000_000
+    return calc_prize(machine)
+
+
+def part2(input):
+    claw_machines = parse_input(input)
+    result = sum([calc_prize2(machine) or 0 for machine in claw_machines])
+    print(result)
+    return result
+
+
+part2(real_input)
