@@ -11,16 +11,22 @@ DIR_LETTERS = [key for key in DIR.keys()]
 
 
 class GridRobot:
-    def __init__(self, col, row, dyx: {'dy': int, 'dx': int} = DIR['^'], grid: np.array or None = None, cost_calc_fn = None):
+    def __init__(self, col, row, dyx: {'dy': int, 'dx': int} = DIR['^'], grid: np.array or None = None,
+                 cost_calc_fn=None):
         self.x = col
         self.y = row
         self.dyx = dyx
-        self.dir_index = DIRS.index(self.dyx)
+        if self.dyx in DIRS:
+            self.dir_index = DIRS.index(self.dyx)
+            self.dir_str = DIR_LETTERS[self.dir_index]
+        else:
+            self.dir_index = None
+            self.dir_str = str(self.dyx.y) + 'dy,' + str(self.dyx.x) + 'dx'
         self.grid = grid
         self.cost = 0
         self.cost_calc_fn = cost_calc_fn
 
-    def move_forward(self, amount = 1):
+    def move_forward(self, amount=1):
         self.x += self.dyx['dx'] * amount
         self.y += self.dyx['dy'] * amount
         if self.cost_calc_fn:
@@ -39,7 +45,7 @@ class GridRobot:
         return self.state_key()
 
     def state_key(self):
-        return f'{self.yx_key()}:{DIR_LETTERS[self.dir_index]}'
+        return f'{self.yx_key()}:{self.dir_str}'
 
     def yx_key(self):
         return yx_key(self.y, self.x)
@@ -49,8 +55,6 @@ class GridRobot:
 
     def clone(self):
         return GridRobot(self.x, self.y, self.dyx, self.grid)
-
-
 
 
 def yx_key(y, x):
