@@ -25,7 +25,7 @@ def find_patch_rec(row, col, garden, patch):
         return
     patch["tile_set"].add(row_col_key)
     for dir in DIRS:
-        new_robot = GridRobot(col, row, dir)
+        new_robot = GridRobot(row, col, dir)
         new_robot.move_forward()
         patch_letter = patch["letter"]
         if out_of_bounds(garden, new_robot) or garden[new_robot.y][new_robot.x] != patch_letter:

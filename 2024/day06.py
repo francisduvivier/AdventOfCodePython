@@ -23,7 +23,7 @@ def find_robot(char_matrix):
     for y, row in enumerate(char_matrix):
         for x, char in enumerate(row):
             if char == ROBOT_START_CHAR:
-                return GridRobot(x, y, DIR[ROBOT_START_CHAR])
+                return GridRobot(y, x, DIR[ROBOT_START_CHAR])
 
 
 def part1(input):

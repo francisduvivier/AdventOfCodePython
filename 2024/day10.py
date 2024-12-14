@@ -26,7 +26,7 @@ def part1(input):
     for y, row in enumerate(number_matrix):
         for x, char in enumerate(row):
             if char == 0:
-                zero_location = GridRobot(x, y)
+                zero_location = GridRobot(y, x)
                 total_score += find_nines_rec(zero_location, number_matrix, set())
 
     print(total_score)
@@ -42,7 +42,7 @@ def find_nines_rec(robot_state: GridRobot, int_matrix: np.array, visited_locatio
         return 1
     total_score = 0
     for dir in DIRS:
-        new_robot = GridRobot(robot_state.x, robot_state.y, dir)
+        new_robot = GridRobot(robot_state.y, robot_state.x, dir)
         new_robot.move_forward()
         if not out_of_bounds(new_robot,
                              int_matrix) and int_matrix[new_robot.y][new_robot.x] == int_matrix[robot_state.y][robot_state.x] + 1:
@@ -64,7 +64,7 @@ def part2(input):
     for y, row in enumerate(number_matrix):
         for x, char in enumerate(row):
             if char == 0:
-                zero_location = GridRobot(x, y)
+                zero_location = GridRobot(y, x)
                 total_score += find_nines_rec(zero_location, number_matrix)
 
     print(total_score)

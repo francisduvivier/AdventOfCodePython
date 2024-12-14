@@ -11,7 +11,7 @@ DIR_LETTERS = [key for key in DIR.keys()]
 
 
 class GridRobot:
-    def __init__(self, col, row, dyx: {'dy': int, 'dx': int} = DIR['^'], grid: np.array or None = None,
+    def __init__(self, row, col, dyx: {'dy': int, 'dx': int} = DIR['^'], grid: np.array or None = None,
                  cost_calc_fn=None):
         self.x = col
         self.y = row
@@ -54,7 +54,7 @@ class GridRobot:
         return self.y < 0 or self.y >= len(self.grid) or self.x < 0 or self.x >= len(self.grid[self.y])
 
     def clone(self):
-        return GridRobot(self.x, self.y, self.dyx, self.grid)
+        return GridRobot(self.y, self.x, self.dyx, self.grid)
 
 
 def yx_key(y, x):
