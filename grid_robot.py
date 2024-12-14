@@ -21,7 +21,7 @@ class GridRobot:
             self.dir_str = DIR_LETTERS[self.dir_index]
         else:
             self.dir_index = None
-            self.dir_str = str(self.dyx.dy) + 'dy,' + str(self.dyx.dx) + 'dx'
+            self.dir_str = str(self.dyx['dy']) + 'dy,' + str(self.dyx['dx']) + 'dx'
         self.grid = grid
         self.cost = 0
         self.cost_calc_fn = cost_calc_fn
