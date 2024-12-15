@@ -61,10 +61,13 @@ class GridRobot:
     def out_of_bounds(self):
         return self.y < 0 or self.y >= len(self.grid) or self.x < 0 or self.x >= len(self.grid[self.y])
 
-    def clone(self, dyx=None):
+    def clone(self, dyx=None, grid=None):
         if dyx is None:
             dyx = self.dyx
-        return GridRobot(self.y, self.x, dyx, self.grid, self.cost_calc_fn, self.wrap)
+        if grid is None:
+            grid = self.grid
+        return GridRobot(self.y, self.x, dyx, grid, self.cost_calc_fn, self.wrap)
+
     def tile_value(self):
         return self.grid[self.y][self.x]
 
