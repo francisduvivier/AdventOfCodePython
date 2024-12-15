@@ -15,6 +15,13 @@ class GridRobot:
                  cost_calc_fn=None, wrap=False):
         self.x = col
         self.y = row
+        self.set_dir(dyx)
+        self.grid = grid
+        self.cost = 0
+        self.cost_calc_fn = cost_calc_fn
+        self.wrap = wrap
+
+    def set_dir(self, dyx):
         self.dyx = dyx
         if self.dyx in DIRS:
             self.dir_index = DIRS.index(self.dyx)
@@ -22,10 +29,6 @@ class GridRobot:
         else:
             self.dir_index = None
             self.dir_str = str(self.dyx['dy']) + 'dy,' + str(self.dyx['dx']) + 'dx'
-        self.grid = grid
-        self.cost = 0
-        self.cost_calc_fn = cost_calc_fn
-        self.wrap = wrap
 
     def move_forward(self, amount=1):
         self.x += self.dyx['dx'] * amount
@@ -44,7 +47,7 @@ class GridRobot:
         return self.move_forward(-1)
 
     def turn_right(self):
-        self.dyx = DIRS[(self.dir_index + 1) % len(DIRS)]
+        self.set_dir(DIRS[(self.dir_index + 1) % len(DIRS)])
 
     def __str__(self):
         return self.state_key()
@@ -58,8 +61,15 @@ class GridRobot:
     def out_of_bounds(self):
         return self.y < 0 or self.y >= len(self.grid) or self.x < 0 or self.x >= len(self.grid[self.y])
 
-    def clone(self):
-        return GridRobot(self.y, self.x, self.dyx, self.grid)
+    def clone(self, dyx=None):
+        if dyx is None:
+            dyx = self.dyx
+        return GridRobot(self.y, self.x, dyx, self.grid, self.cost_calc_fn, self.wrap)
+    def tile_value(self):
+        return self.grid[self.y][self.x]
+
+    def set_tile_value(self, value):
+        self.grid[self.y][self.x] = value
 
 
 def yx_key(y, x):
