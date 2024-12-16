@@ -68,7 +68,7 @@ def find_best_rec(robot: GridRobot, end, calc_state):
     return
 
 
-def part1(input):
+def part12(input):
     grid = parse_input(input)
     start = find_value('S', grid)
     end = find_value('E', grid)
@@ -82,9 +82,10 @@ def part1(input):
 
     result = len(calc_state.all_tiles)
     print('result', result)
-    return result
+    print('min', calc_state.min)
+    return result, calc_state.min
 
 
-assert part1(test_input) == 45
-assert part1(test_input2) == 64
-part1(real_input)
+assert part12(test_input) == (45, 7036)
+assert part12(test_input2) == (64, 11048)
+part12(real_input)
