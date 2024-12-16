@@ -57,31 +57,33 @@ def part12(input):
 
     best_robot = None
     heur_map = {}
+    heur_map[start_robot.state_key()]= heuristic(start_robot)
     def key_heuristic(el: GridRobot):
         return heur_map[el]
 
     def insert_sorted(next_states, rob):
         state_key = rob.state_key()
-        eq_map[state_key] = [next_r]
+        eq_map[state_key] = []
         found_states[state_key] = next_r
         heur_map[state_key] = -heuristic(rob)
         next_states.append(state_key)
-        next_states.sort(key=key_heuristic)
         pass
 
     while len(sorted_states_to_try) > 0:
+        sorted_states_to_try.sort(key=key_heuristic)
         next_states = get_next_states(found_states[sorted_states_to_try.pop()])
         for next_r in next_states:
             if best_robot is not None and best_robot.cost < heuristic(next_r):
                 continue
-            if next_r.state_key() not in found_states:
+            next_key = next_r.state_key()
+            if next_key not in found_states:
                 insert_sorted(sorted_states_to_try, next_r)
-            elif found_states[next_r.state_key()].cost > next_r.cost:
-                if next_r.state_key() in sorted_states_to_try:
-                    sorted_states_to_try.remove(next_r.state_key())
+            elif found_states[next_key].cost > next_r.cost:
+                if next_key in sorted_states_to_try:
+                    sorted_states_to_try.remove(next_key)
                 insert_sorted(sorted_states_to_try, next_r)
-            elif found_states[next_r.state_key()].cost == next_r.cost:
-                eq_map[next_r.state_key()].append(next_r)
+            elif found_states[next_key].cost == next_r.cost:
+                eq_map[next_key].append(next_r)
             end_found = next_r.y == end.y and next_r.x == end.x
             if end_found:
                 best_robot = next_r
@@ -90,7 +92,19 @@ def part12(input):
     for path_item in best_robot.path:
         for eq_robot in eq_map[path_item]:
             result_set = result_set.union(set(eq_robot.path_tiles))
-    result = len(result_set)
+
+    def get_eq_path_tiles_rec(r_state):
+        result_set = set()
+        for eq in eq_map[r_state]:
+            result_set = result_set.union(eq.path_tiles[:-1])
+            for sub_path in eq.path[:-1]:
+                result_set = result_set.union(get_eq_path_tiles_rec(sub_path))
+        return result_set
+
+    all_tiles = set(best_robot.path_tiles)
+    for path_item in best_robot.path:
+        all_tiles = all_tiles.union(get_eq_path_tiles_rec(path_item))
+    result = len(all_tiles)
     print('result', result)
     print('best_robot', best_robot.cost)
     return result, best_robot.cost
