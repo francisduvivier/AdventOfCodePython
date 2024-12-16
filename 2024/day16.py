@@ -36,11 +36,6 @@ def get_next_states(robot: GridRobot) -> list[GridRobot]:
     return next_states
 
 
-def insert_sorted(next_states, param, key):
-    next_states.append(param)
-    next_states.sort(key=key)
-    pass
-
 
 def part12(input):
     grid = parse_input(input)
@@ -61,27 +56,30 @@ def part12(input):
         return robot.cost + abs(robot.x - end.x) + abs(robot.y - end.y) + min_turn_cost
 
     best_robot = None
+    heur_map = {}
+    def key_heuristic(el: GridRobot):
+        return heur_map[el]
 
-    def key_heuristic(robot_key: str):
-        robot = found_states[robot_key]
-        min_turn_cost = 1000 if robot.x != end.x and robot.y != end.y else 0
-        return abs(robot.x - end.x) + abs(robot.y - end.y) + min_turn_cost
+    def insert_sorted(next_states, rob):
+        state_key = rob.state_key()
+        eq_map[state_key] = [next_r]
+        found_states[state_key] = next_r
+        heur_map[state_key] = -heuristic(rob)
+        next_states.append(state_key)
+        next_states.sort(key=key_heuristic)
+        pass
 
     while len(sorted_states_to_try) > 0:
         next_states = get_next_states(found_states[sorted_states_to_try.pop()])
         for next_r in next_states:
-            if best_robot is not None and heuristic(next_r) > best_robot.cost:
+            if best_robot is not None and best_robot.cost < heuristic(next_r):
                 continue
             if next_r.state_key() not in found_states:
-                found_states[next_r.state_key()] = next_r
-                insert_sorted(sorted_states_to_try, next_r.state_key(), key=key_heuristic)
-                eq_map[next_r.state_key()] = [next_r]
+                insert_sorted(sorted_states_to_try, next_r)
             elif found_states[next_r.state_key()].cost > next_r.cost:
-                found_states[next_r.state_key()] = next_r
                 if next_r.state_key() in sorted_states_to_try:
                     sorted_states_to_try.remove(next_r.state_key())
-                insert_sorted(sorted_states_to_try, next_r.state_key(), key=key_heuristic)
-                eq_map[next_r.state_key()] = [next_r]
+                insert_sorted(sorted_states_to_try, next_r)
             elif found_states[next_r.state_key()].cost == next_r.cost:
                 eq_map[next_r.state_key()].append(next_r)
             end_found = next_r.y == end.y and next_r.x == end.x
