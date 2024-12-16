@@ -83,3 +83,9 @@ def parse_state_key(state_key: str):
     split1 = state_key.split(':')
     split2 = split1[0].split(',')
     return int(split2[0]), int(split2[1]), split1[1],
+
+def find_value(search_val, grid: np.array):
+    result_tuple = np.where(grid == search_val)
+    y = result_tuple[0][0]
+    x = result_tuple[1][0]
+    return y, x
