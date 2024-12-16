@@ -75,13 +75,13 @@ def part12(input):
             if next_r.state_key() not in found_states:
                 found_states[next_r.state_key()] = next_r
                 insert_sorted(sorted_states_to_try, next_r.state_key(), key=key_heuristic)
-                eq_map[next_r.state_key()] = []
+                eq_map[next_r.state_key()] = [next_r]
             elif found_states[next_r.state_key()].cost > next_r.cost:
                 found_states[next_r.state_key()] = next_r
                 if next_r.state_key() in sorted_states_to_try:
                     sorted_states_to_try.remove(next_r.state_key())
                 insert_sorted(sorted_states_to_try, next_r.state_key(), key=key_heuristic)
-                eq_map[next_r.state_key()] = []
+                eq_map[next_r.state_key()] = [next_r]
             elif found_states[next_r.state_key()].cost == next_r.cost:
                 eq_map[next_r.state_key()].append(next_r)
             end_found = next_r.y == end.y and next_r.x == end.x
