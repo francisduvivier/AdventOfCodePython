@@ -12,14 +12,17 @@ DIR_LETTERS = [key for key in DIR.keys()]
 
 class GridRobot:
     def __init__(self, row, col, dyx: {'dy': int, 'dx': int} = DIR['^'], grid: np.array or None = None,
-                 cost_calc_fn=None, wrap=False):
+                 cost_calc_fn=None, turn_cost_fn=None, wrap=False, cost=0):
         self.x = col
         self.y = row
         self.set_dir(dyx)
         self.grid = grid
-        self.cost = 0
+        self.cost = cost
         self.cost_calc_fn = cost_calc_fn
+        self.turn_cost_fn = turn_cost_fn
         self.wrap = wrap
+        self.path = []
+        self.path_tiles = [self.yx_key()]
 
     def set_dir(self, dyx):
         self.dyx = dyx
@@ -37,17 +40,25 @@ class GridRobot:
         self.y += self.dyx['dy'] * amount
         if self.wrap:
             self.y = self.y % len(self.grid)
-        if self.cost_calc_fn:
-            self.cost += self.get_move_cost(amount)
+        if self.cost_calc_fn is not None:
+            self.cost += self.cost_calc_fn(amount)
+            self.path.append(str(self))
+            self.path_tiles.append(self.yx_key())
 
     def get_move_cost(self, amount):
-        return self.cost_calc_fn(self, amount)
+        return self.cost_calc_fn(amount)
 
     def move_backward(self):
         return self.move_forward(-1)
 
-    def turn_right(self):
-        self.set_dir(DIRS[(self.dir_index + 1) % len(DIRS)])
+    def turn_right(self, amount=1):
+        self.set_dir(DIRS[(self.dir_index + amount) % len(DIRS)])
+        if self.turn_cost_fn is not None:
+            self.cost += self.turn_cost_fn(amount)
+            self.path.append(str(self))
+
+    def turn_left(self):
+        return self.turn_right(3)
 
     def __str__(self):
         return self.state_key()
@@ -66,7 +77,11 @@ class GridRobot:
             dyx = self.dyx
         if grid is None:
             grid = self.grid
-        return GridRobot(self.y, self.x, dyx, grid, self.cost_calc_fn, self.wrap)
+        cloned = GridRobot(self.y, self.x, dyx, grid, self.cost_calc_fn, turn_cost_fn=self.turn_cost_fn, wrap=self.wrap,
+                           cost=self.cost)
+        cloned.path = self.path.copy()
+        cloned.path_tiles = self.path_tiles.copy()
+        return cloned
 
     def tile_value(self):
         return self.grid[self.y][self.x]
@@ -83,6 +98,7 @@ def parse_state_key(state_key: str):
     split1 = state_key.split(':')
     split2 = split1[0].split(',')
     return int(split2[0]), int(split2[1]), split1[1],
+
 
 def find_value(search_val, grid: np.array):
     result_tuple = np.where(grid == search_val)
