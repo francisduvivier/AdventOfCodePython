@@ -1,27 +1,42 @@
 from dotmap import DotMap
 
 test_input = open('day17-testinput.txt').read().strip()
+test_input2 = open('day17-testinput2.txt').read().strip()
 real_input = open('day17-input.txt').read().strip()
 
-
+glob_states = {}
 class OpCodeMachine:
     def __init__(self, register_map, program, instruction_pointer=0, ticks=0, output=None):
+        global glob_states
         self.register_map = register_map
         self.program = program
         self.ticks = ticks
         self.output = [] if output is None else output
         self.instruction_pointer = instruction_pointer
+        self.states = {}
 
     def clone(self):
-        cloned = OpCodeMachine(self.register_map.copy(), self.program.copy(), self.instruction_pointer, self.ticks,
+        cloned = OpCodeMachine(self.register_map.copy(), self.program, self.instruction_pointer, self.ticks,
                                self.output.copy())
         return cloned
 
-    def run_program(self):
+    def state_key(self):
+        return str(self.register_map) + str(self.instruction_pointer)
+
+    def run_program(self, part2 = False):
         while self.instruction_pointer < len(self.program):
+            state_key = self.state_key()
+            if state_key in self.states:
+                self.output = []
+                # print('loop detected')
+                return
+            self.states[state_key] = join_nbs(self.output)
             prev_pointer = self.instruction_pointer
             self.instruction_pointer += 2
             self._do_op(prev_pointer)
+            if part2 and self.program[prev_pointer] == 5 and self.program[:len(self.output)] != self.output:
+                self.output = []
+                return
 
     def _do_op(self, pointer):
         opcode = self.program[pointer]
@@ -58,8 +73,9 @@ class OpCodeMachine:
                 # The out instruction (opcode 5) calculates the value of its combo operand modulo 8, then outputs that value.
                 # (If a program outputs multiple values, they are separated by commas.)
                 output = self.combo(operand) % 8
-                print('pointer', self.instruction_pointer, 'output', output)
+                # print('pointer', self.instruction_pointer, 'output', output)
                 self.output.append(output)
+
             case 6:
                 # The bdv instruction (opcode 6) works exactly like the adv instruction except that the result
                 # is stored in the B register. (The numerator is still read from the A register.)
@@ -115,15 +131,40 @@ def parse_input(input):
     return program, register_map
 
 
+def join_nbs(nbs: list[int]):
+    return ','.join([str(nb) for nb in nbs])
+
+
 def part1(input):
     program, register_map = parse_input(input)
     print(program, register_map)
     runner = OpCodeMachine(register_map, program)
     runner.run_program()
-    result = ','.join([str(nb) for nb in runner.output])
+    result = join_nbs(runner.output)
     print(result)
     return result
 
 
 assert part1(test_input) == '4,6,3,5,6,3,5,2,1,0'
 part1(real_input)
+
+
+def part2(input):
+    program, register_map = parse_input(input)
+    print(program, register_map)
+    start_runner = OpCodeMachine(register_map, program)
+    prog_str = join_nbs(program)
+    a = 0
+    while True:
+        runner = start_runner.clone()
+        runner.register_map.A = a
+        runner.run_program(True)
+        result = join_nbs(runner.output)
+        if result == prog_str:
+            print('result p2', a)
+            return a
+        a += 1
+
+
+assert part2(test_input2) == 117440
+part2(real_input)
