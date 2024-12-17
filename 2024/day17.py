@@ -108,6 +108,12 @@ class OpCodeMachine:
             case 7:
                 raise NotImplementedError('Invalid program')
 
+    def run_clone_part2(self, try_solution):
+        clone = self.clone()
+        clone.register_map.A = try_solution
+        clone.run_program()
+        return clone.output
+
 
 def advance(self):
     self.ticks += 1
@@ -151,13 +157,13 @@ part1(real_input)
 def combo_name(operand):
     match operand:
         case 0:
-            return '_' + str(operand)
+            return operand
         case 1:
-            return '_' + str(operand)
+            return operand
         case 2:
-            return '_' + str(operand)
+            return operand
         case 3:
-            return '_' + str(operand)
+            return operand
         case 4:
             return 'A'
         case 5:
@@ -189,39 +195,32 @@ def get_ops_name(opcode, operand):
     pass
 
 
+DEBUG = False
+
 def part2(input):
     program, register_map = parse_input(input)
-    print(program, register_map)
+    print('\n', program, register_map)
     start_runner = OpCodeMachine(register_map, program)
-    prog_str2 = join_nbs(
-        [get_ops_name(code, program[index + 1]) for index, code in enumerate(program) if index % 2 == 0])
-    print(prog_str2)
-    solutions = [DotMap({"pos": 0, "solution": 0, "shift": 0})]
+    program_explanation = '\n'.join(
+        [str(get_ops_name(code, program[index + 1])) for index, code in enumerate(program) if index % 2 == 0])
+    print(program_explanation)
+    solutions = [{"pos": 0, "most_significant_bits": 0}]
     while len(solutions) != 0:
-        print('len(solutions)', len(solutions))
-        sol = solutions.pop()
-        pos = sol.pos
-        sol_shift = 0 if "shift" not in sol else sol.shift
-        solution_msb = sol.solution
-        print('pos', pos, 'solution', bin(solution_msb), 'shift', sol_shift)
-        for try_nb in range(8):
-            runner = start_runner.clone()
-            try_solution = solution_msb + try_nb
-            # program_A = 1 * (1 << (3 * (pos + 1) + 2)) + try_solution
-            program_A = try_solution
-            runner.register_map.A = program_A
-            runner.run_program()
-            if runner.output[-pos - 1:] == program[-pos - 1:]:
-                if pos == len(program) - 1 and runner.output[-pos - 1:] == program[-pos - 1:]:
-                    print('full solution!', try_solution)
+        if DEBUG: print('len(solutions)', len(solutions))
+        partial = solutions.pop()
+        pos = partial['pos']
+        most_significant_bits = partial['most_significant_bits']
+        if DEBUG: print('pos', pos, 'solution', bin(most_significant_bits))
+        for new_bits in range(8):
+            try_solution = (most_significant_bits << 3) + new_bits
+            run_output = start_runner.run_clone_part2(try_solution)
+            if run_output[-pos - 1:] == program[-pos - 1:]:
+                possibility = {"pos": pos + 1, "most_significant_bits": try_solution}
+                if DEBUG: print('possibility', possibility)
+                solutions.insert(0, possibility)
+                if pos == len(program) - 1:
+                    print('\npart2 solution!', try_solution)
                     return try_solution
-                if pos < len(program):
-                    shifts = [sol.shift] if 'shift' in sol else [0, 1, 2]
-                    for shift in shifts:
-                        if shift == 0 or (try_solution << shift) < 8:
-                            possibility = DotMap({"pos": pos + 1, "solution": try_solution << 3, "shift": shift})
-                            print('possibility', possibility)
-                            solutions.insert(0, possibility)
 
     raise NotImplementedError('no solution')
 
@@ -236,4 +235,4 @@ def part2(input):
 # jump 0 until A = 0
 
 assert part2(test_input2) == 117440
-part2(real_input)
+assert part2(real_input) == 266932601404433
