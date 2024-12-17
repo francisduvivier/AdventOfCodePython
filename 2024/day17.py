@@ -5,6 +5,8 @@ test_input2 = open('day17-testinput2.txt').read().strip()
 real_input = open('day17-input.txt').read().strip()
 
 glob_states = {}
+
+
 class OpCodeMachine:
     def __init__(self, register_map, program, instruction_pointer=0, ticks=0, output=None):
         global glob_states
@@ -23,20 +25,17 @@ class OpCodeMachine:
     def state_key(self):
         return str(self.register_map) + str(self.instruction_pointer)
 
-    def run_program(self, part2 = False):
+    def run_program(self, part2=False):
         while self.instruction_pointer < len(self.program):
-            state_key = self.state_key()
-            if state_key in self.states:
-                self.output = []
-                # print('loop detected')
-                return
-            self.states[state_key] = join_nbs(self.output)
             prev_pointer = self.instruction_pointer
             self.instruction_pointer += 2
             self._do_op(prev_pointer)
-            if part2 and self.program[prev_pointer] == 5 and self.program[:len(self.output)] != self.output:
-                self.output = []
-                return
+            # if part2 and len(self.output) > len(self.program):
+            #     self.output = []
+            #     return
+            # if part2 and self.program[prev_pointer] == 5 and self.program[:len(self.output)] != self.output:
+            #     self.output = []
+            #     return
 
     def _do_op(self, pointer):
         opcode = self.program[pointer]
@@ -149,22 +148,92 @@ assert part1(test_input) == '4,6,3,5,6,3,5,2,1,0'
 part1(real_input)
 
 
+def combo_name(operand):
+    match operand:
+        case 0:
+            return '_' + str(operand)
+        case 1:
+            return '_' + str(operand)
+        case 2:
+            return '_' + str(operand)
+        case 3:
+            return '_' + str(operand)
+        case 4:
+            return 'A'
+        case 5:
+            return 'B'
+        case 6:
+            return 'C'
+        case 7:
+            raise NotImplementedError('Invalid program')
+
+
+def get_ops_name(opcode, operand):
+    match opcode:
+        case 0:
+            return 'adv', combo_name(operand)
+        case 1:
+            return 'bxl', operand
+        case 2:
+            return 'bst', combo_name(operand)
+        case 3:
+            return 'jnz', operand
+        case 4:
+            return 'bxc', '_'
+        case 5:
+            return 'out', combo_name(operand)
+        case 6:
+            return 'bdv', combo_name(operand)
+        case 7:
+            return 'cdv', combo_name(operand)
+    pass
+
+
 def part2(input):
     program, register_map = parse_input(input)
     print(program, register_map)
     start_runner = OpCodeMachine(register_map, program)
-    prog_str = join_nbs(program)
-    a = 0
-    while True:
-        runner = start_runner.clone()
-        runner.register_map.A = a
-        runner.run_program(True)
-        result = join_nbs(runner.output)
-        if result == prog_str:
-            print('result p2', a)
-            return a
-        a += 1
+    prog_str2 = join_nbs(
+        [get_ops_name(code, program[index + 1]) for index, code in enumerate(program) if index % 2 == 0])
+    print(prog_str2)
+    solutions = [DotMap({"pos": 0, "solution": 0, "shift": 0})]
+    while len(solutions) != 0:
+        print('len(solutions)', len(solutions))
+        sol = solutions.pop()
+        pos = sol.pos
+        sol_shift = 0 if "shift" not in sol else sol.shift
+        solution_msb = sol.solution
+        print('pos', pos, 'solution', bin(solution_msb), 'shift', sol_shift)
+        for try_nb in range(8):
+            runner = start_runner.clone()
+            try_solution = solution_msb + try_nb
+            # program_A = 1 * (1 << (3 * (pos + 1) + 2)) + try_solution
+            program_A = try_solution
+            runner.register_map.A = program_A
+            runner.run_program()
+            if runner.output[-pos - 1:] == program[-pos - 1:]:
+                if pos == len(program) - 1 and runner.output[-pos - 1:] == program[-pos - 1:]:
+                    print('full solution!', try_solution)
+                    return try_solution
+                if pos < len(program):
+                    shifts = [sol.shift] if 'shift' in sol else [0, 1, 2]
+                    for shift in shifts:
+                        if shift == 0 or (try_solution << shift) < 8:
+                            possibility = DotMap({"pos": pos + 1, "solution": try_solution << 3, "shift": shift})
+                            print('possibility', possibility)
+                            solutions.insert(0, possibility)
 
+    raise NotImplementedError('no solution')
+
+
+# B = A % 3 (011) : B=a1-!a1-!a1
+# B = B XOR 3 (011) : B=a1-!a1-!a1
+# C = A/(2**B): C=Abits[0:-B] c is a but with 0 to 8 least signif bits less
+# A = A/(2**3): A=Abits[0:-3] a is a but 3 least sign bits less
+# B = B XOR 4 (100) : B=!a1-!a1-!a1
+# B = B XOR C : B = Abits[0:-B] XOR !a1-!a1-!a1
+# out B % 8: output 3 least significant bits of B
+# jump 0 until A = 0
 
 assert part2(test_input2) == 117440
 part2(real_input)
