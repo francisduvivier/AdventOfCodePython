@@ -12,7 +12,7 @@ DIR_LETTERS = [key for key in DIR.keys()]
 
 class GridRobot:
     def __init__(self, row, col, dyx: {'dy': int, 'dx': int} = DIR['^'], grid: np.array or None = None,
-                 cost_calc_fn=None, turn_cost_fn=None, wrap=False, cost=0):
+                 cost_calc_fn=None, turn_cost_fn=None, wrap=False, cost=0, path = None, path_tiles = None):
         self.x = col
         self.y = row
         self.set_dir(dyx)
@@ -21,8 +21,16 @@ class GridRobot:
         self.cost_calc_fn = cost_calc_fn
         self.turn_cost_fn = turn_cost_fn
         self.wrap = wrap
-        self.path = []
-        self.path_tiles = [self.yx_key()]
+        self.path = [] if path is None else path
+        self.path_tiles = [self.yx_key()] if path_tiles is None else path_tiles
+    def clone(self, dyx=None, grid=None):
+        if dyx is None:
+            dyx = self.dyx
+        if grid is None:
+            grid = self.grid
+        cloned = GridRobot(self.y, self.x, dyx, grid, self.cost_calc_fn, turn_cost_fn=self.turn_cost_fn, wrap=self.wrap,
+                           cost=self.cost, path= self.path.copy(), path_tiles = self.path_tiles.copy())
+        return cloned
 
     def set_dir(self, dyx):
         self.dyx = dyx
@@ -71,17 +79,6 @@ class GridRobot:
 
     def out_of_bounds(self):
         return self.y < 0 or self.y >= len(self.grid) or self.x < 0 or self.x >= len(self.grid[self.y])
-
-    def clone(self, dyx=None, grid=None):
-        if dyx is None:
-            dyx = self.dyx
-        if grid is None:
-            grid = self.grid
-        cloned = GridRobot(self.y, self.x, dyx, grid, self.cost_calc_fn, turn_cost_fn=self.turn_cost_fn, wrap=self.wrap,
-                           cost=self.cost)
-        cloned.path = self.path.copy()
-        cloned.path_tiles = self.path_tiles.copy()
-        return cloned
 
     def tile_value(self):
         return self.grid[self.y][self.x]
