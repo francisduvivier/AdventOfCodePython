@@ -26,7 +26,6 @@ def get_next_states(robot: GridRobot):
 
 def shortest_path(start_robot:  GridRobot, end: GridRobot):
     found_states = {}
-    eq_map = {}
     best_robot = None
     heur_map = {}
 
@@ -43,7 +42,6 @@ def shortest_path(start_robot:  GridRobot, end: GridRobot):
 
     def insert_sorted(next_states, rob):
         yx_key = rob.yx_key()
-        eq_map[yx_key] = []
         found_states[yx_key] = next_r
         heur_map[yx_key] = -heuristic(rob)
         next_states.append(yx_key)
@@ -53,7 +51,7 @@ def shortest_path(start_robot:  GridRobot, end: GridRobot):
         sorted_states_to_try.sort(key=key_heuristic)
         next_states = get_next_states(found_states[sorted_states_to_try.pop()])
         for next_r in next_states:
-            if best_robot is not None and best_robot.cost < heuristic(next_r):
+            if best_robot is not None and best_robot.cost <= heuristic(next_r):
                 continue
             next_key = next_r.yx_key()
             if next_key not in found_states:
@@ -62,8 +60,6 @@ def shortest_path(start_robot:  GridRobot, end: GridRobot):
                 if next_key in sorted_states_to_try:
                     sorted_states_to_try.remove(next_key)
                 insert_sorted(sorted_states_to_try, next_r)
-            elif found_states[next_key].cost == next_r.cost:
-                eq_map[next_key].append(next_r)
             end_found = next_r.y == end.y and next_r.x == end.x
             if end_found:
                 best_robot = next_r
