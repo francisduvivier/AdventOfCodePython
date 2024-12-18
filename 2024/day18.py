@@ -20,17 +20,14 @@ def parse_input(input):
 
 DEBUG = True
 
-def get_next_states(robot: GridRobot):
+def get_next_dirs_forward(robot: GridRobot):
     clones =  [robot.clone_forward(dir) for dir in DIRS]
     return [clone for clone in clones if not clone.out_of_bounds() and clone.tile_value() == '.']
 
-def shortest_path(start_robot:  GridRobot, end: GridRobot):
+def shortest_path(start_robot:  GridRobot, end_check, heuristic, get_next_states):
     found_states = {}
     best_robot = None
     heur_map = {}
-
-    def heuristic(robot: GridRobot):
-        return robot.cost + abs(robot.x - end.x) + abs(robot.y - end.y)
 
     heur_map[start_robot.yx_key()]= heuristic(start_robot)
     sorted_states_to_try = [start_robot.yx_key()]
@@ -60,7 +57,7 @@ def shortest_path(start_robot:  GridRobot, end: GridRobot):
                 if next_key in sorted_states_to_try:
                     sorted_states_to_try.remove(next_key)
                 insert_sorted(sorted_states_to_try, next_r)
-            end_found = next_r.y == end.y and next_r.x == end.x
+            end_found = end_check(next_r)
             if end_found:
                 best_robot = next_r
                 print('found path', best_robot, best_robot.cost)
@@ -75,7 +72,14 @@ def part1(input, slice, grid_size):
     if DEBUG: print_grid(grid)
     start_robot = GridRobot(0,0, grid=grid, cost_calc_fn=lambda amount:amount)
     end_robot = GridRobot(grid_size -1,grid_size -1)
-    best_robot = shortest_path(start_robot, end_robot)
+
+    def end_check(test_r):
+        return test_r.x== end_robot.x and test_r.y == end_robot.y
+
+    def heuristic(robot: GridRobot):
+        return robot.cost + abs(robot.x - end_robot.x) + abs(robot.y - end_robot.y)
+
+    best_robot = shortest_path(start_robot, end_check, heuristic, get_next_dirs_forward)
     return best_robot.cost
 
 
