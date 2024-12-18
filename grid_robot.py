@@ -86,6 +86,11 @@ class GridRobot:
     def set_tile_value(self, value):
         self.grid[self.y][self.x] = value
 
+    def clone_forward(self, dir):
+        clone = self.clone(dyx=dir)
+        clone.move_forward()
+        return clone
+
 
 def yx_key(y, x):
     return f'{y},{x}'
