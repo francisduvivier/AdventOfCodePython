@@ -6,7 +6,14 @@ DIR = {
     'v': {'dx': 0, 'dy': 1},
     '<': {'dx': -1, 'dy': 0},
 }
+SKEWED_DIR = {
+    'R': {'dx': 1, 'dy': -1},
+    'r': {'dx': 1, 'dy': 1},
+    'L': {'dx': -1, 'dy': -1},
+    'l': {'dx': -1, 'dy': 1},
+}
 DIRS = [DIR[key] for key in DIR.keys()]
+SKEWED_DIRS = [SKEWED_DIR[key] for key in SKEWED_DIR.keys()]
 DIR_LETTERS = [key for key in DIR.keys()]
 
 
