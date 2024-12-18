@@ -102,3 +102,7 @@ def find_value(search_val, grid: np.array):
     y = result_tuple[0][0]
     x = result_tuple[1][0]
     return y, x
+
+
+def print_grid(tile_grid):
+    print('\n'.join([''.join(line) for line in tile_grid]))
