@@ -1,10 +1,4 @@
-import re
-import time
 from functools import cache
-
-import numpy as np
-
-from util import map_to_numbers, sub_map_to_numbers
 
 test_input = open('day19-testinput.txt').read().strip()
 real_input = open('day19-input.txt').read().strip()
