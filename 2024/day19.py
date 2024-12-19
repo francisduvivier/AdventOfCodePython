@@ -31,3 +31,13 @@ def part1(input):
 
 assert part1(test_input) == 6
 part1(real_input)
+
+
+def part2(input):
+    towels, designs = parse_input(input)
+    nb_possible = sum([1 for design in designs if possible(design, towels)])
+    print(nb_possible)
+    return nb_possible
+
+assert part2(test_input) == 16
+part2(real_input)
