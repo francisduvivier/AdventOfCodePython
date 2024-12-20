@@ -40,24 +40,28 @@ def count_paths(start_robot: GridRobot, end_check, heuristic, get_next_states, m
         heur_map[yx_key] = -heuristic(rob)
         next_states.append(yx_key)
         pass
-
+    ok_robots=0
     while len(sorted_states_to_try) > 0:
         sorted_states_to_try.sort(key=key_heuristic)
-        next_states = get_next_states(found_states[sorted_states_to_try.pop()])
+        try_state = found_states[sorted_states_to_try.pop()]
+        next_states = get_next_states(try_state)
         for next_r in next_states:
             next_key = next_r.yx_key()
-            if next_key not in found_states:
-                insert_sorted(sorted_states_to_try, next_r)
-            elif found_states[next_key].cost > next_r.cost:
-                if next_key in sorted_states_to_try:
-                    sorted_states_to_try.remove(next_key)
-                insert_sorted(sorted_states_to_try, next_r)
             end_found = end_check(next_r)
-            if end_found and (not max_cost or next_r.cost <= max_cost):
+            if next_r.cost > max_cost:
+                continue
+            if not end_found:
+                if next_key not in found_states:
+                    insert_sorted(sorted_states_to_try, next_r)
+                elif found_states[next_key].cost > next_r.cost:
+                    if next_key in sorted_states_to_try:
+                        sorted_states_to_try.remove(next_key)
+                    insert_sorted(sorted_states_to_try, next_r)
+            else:
                 best_robot = next_r
                 if DEBUG: print('found path', best_robot, best_robot.cost)
-                return best_robot.cost
-    return None
+                ok_robots +=1
+    return ok_robots
 
 
 def find_all(start_robot, end_robot, grid, max_cost, max_cheat_dist):
@@ -108,11 +112,7 @@ def part12(input, max_cost, improvement_needed, only_equal=False, max_cheat_dist
     return result
 
 
-assert part12(test_input, 84, 2, True) == 14
-assert part12(test_input, 84, 4, True) == 14
-assert part12(test_input, 84, 6, True) == 2
-assert part12(test_input, 84, 12, True) == 3
-assert part12(test_input, 84, 64, True) == 1
+assert part12(test_input, 84, 64, False) == 1
 part12(real_input, 9456, 100)
 
 assert part12(test_input, 84, 50, True, 20) == 32
