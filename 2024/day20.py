@@ -1,4 +1,5 @@
 import time
+from logging import DEBUG
 
 import numpy as np
 
@@ -8,31 +9,28 @@ from util import map_to_numbers, sub_map_to_numbers
 test_input = open('day20-testinput.txt').read().strip()
 real_input = open('day20-input.txt').read().strip()
 
+DEBUG = False
+
 
 def parse_input(input):
     lines = input.splitlines()
     char_matrix = [[char for char in line] for line in lines]
     return np.array(char_matrix)
 
-max = None
-def get_next_dirs_4(robot: GridRobot):
-    global max
+
+def get_next_dirs_4(robot: GridRobot, max_cheat_dist):
     clones = [robot.clone_forward(dir) for dir in DIRS]
-    return [clone for clone in clones if not clone.out_of_bounds() and clone.tile_value() == '.' and (max is None or clone.cost <= max)]
+    return [clone for clone in clones if
+            not clone.out_of_bounds() and clone.tile_value() == '.']
 
 
-DEBUG = True
-
-
-def shortest_path(start_robot: GridRobot, end_check, heuristic, get_next_states):
+def count_paths(start_robot: GridRobot, end_check, heuristic, get_next_states, max_cost):
     found_states = {}
-    best_robot = None
     heur_map = {}
 
-    heur_map[start_robot.yx_key()] = heuristic(start_robot)
     sorted_states_to_try = [start_robot.yx_key()]
     found_states[start_robot.yx_key()] = start_robot
-
+    heur_map[start_robot.yx_key()] = -heuristic(start_robot)
     def key_heuristic(el_key):
         return heur_map[el_key]
 
@@ -47,8 +45,6 @@ def shortest_path(start_robot: GridRobot, end_check, heuristic, get_next_states)
         sorted_states_to_try.sort(key=key_heuristic)
         next_states = get_next_states(found_states[sorted_states_to_try.pop()])
         for next_r in next_states:
-            if best_robot is not None and best_robot.cost <= heuristic(next_r) or max is not None and max <= heuristic(next_r):
-                continue
             next_key = next_r.yx_key()
             if next_key not in found_states:
                 insert_sorted(sorted_states_to_try, next_r)
@@ -57,13 +53,14 @@ def shortest_path(start_robot: GridRobot, end_check, heuristic, get_next_states)
                     sorted_states_to_try.remove(next_key)
                 insert_sorted(sorted_states_to_try, next_r)
             end_found = end_check(next_r)
-            if end_found:
+            if end_found and (not max_cost or next_r.cost <= max_cost):
                 best_robot = next_r
                 if DEBUG: print('found path', best_robot, best_robot.cost)
-    return best_robot
+                return best_robot.cost
+    return None
 
 
-def find_shortest(start_robot, end_robot, grid):
+def find_all(start_robot, end_robot, grid, max_cost, max_cheat_dist):
     start_robot.grid = grid
     end_robot.grid = grid
 
@@ -73,8 +70,11 @@ def find_shortest(start_robot, end_robot, grid):
     def heuristic(robot: GridRobot):
         return robot.cost + abs(robot.x - end_robot.x) + abs(robot.y - end_robot.y)
 
-    best_robot = shortest_path(start_robot, end_check, heuristic, get_next_dirs_4)
-    return best_robot.cost
+    def get_next(r):
+        return get_next_dirs_4(r, max_cheat_dist)
+
+    result = count_paths(start_robot, end_check, heuristic, get_next, max_cost)
+    return result
 
 
 def get_cheat_grids(grid: np.array):
@@ -88,7 +88,8 @@ def get_cheat_grids(grid: np.array):
     return cheat_grids
 
 
-def part1(input, improvement_needed, only_equal =False):
+def part12(input, max_cost, improvement_needed, only_equal=False, max_cheat_dist=1):
+    print('improvement_needed', improvement_needed)
     grid = parse_input(input)
     start = find_value('S', grid)
     # print('start', start)
@@ -96,32 +97,24 @@ def part1(input, improvement_needed, only_equal =False):
     # print('end', end)
     grid[start[0]][start[1]] = '.'
     grid[end[0]][end[1]] = '.'
-    result = 0
 
     def cost_calc(amount):
         return 1
 
     start_robot = GridRobot(start[0], start[1], cost_calc_fn=cost_calc)
     end_robot = GridRobot(end[0], end[1])
-    shortest = find_shortest(start_robot, end_robot, grid)
-    print('shortest path cost', shortest)
-    max = shortest - improvement_needed
-    for i, cheat_grid in enumerate(get_cheat_grids(grid)):
-        if DEBUG: print('cheat grid nb', i)
-        cheat_path = find_shortest(start_robot, end_robot, cheat_grid)
-        if only_equal:
-            if shortest - cheat_path == improvement_needed:  # todo check off by one
-                result += 1
-        else:
-            if shortest - cheat_path >= improvement_needed:  # todo check off by one
-                result += 1
+    result = find_all(start_robot, end_robot, grid, max_cost, max_cheat_dist)
     print(result)
     return result
 
 
-assert part1(test_input, 2, True) == 14
-assert part1(test_input, 4, True) == 14
-assert part1(test_input, 6, True) == 2
-assert part1(test_input, 12, True) == 3
-assert part1(test_input, 64, True) == 1
-part1(real_input, 100)
+assert part12(test_input, 84, 2, True) == 14
+assert part12(test_input, 84, 4, True) == 14
+assert part12(test_input, 84, 6, True) == 2
+assert part12(test_input, 84, 12, True) == 3
+assert part12(test_input, 84, 64, True) == 1
+part12(real_input, 9456, 100)
+
+assert part12(test_input, 84, 50, True, 20) == 32
+assert part12(test_input, 84, 52, True, 20) == 31
+part12(real_input, 9456, 100, False, 20)
