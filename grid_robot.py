@@ -30,7 +30,7 @@ class GridRobot:
         self.wrap = wrap
         self.path = [str(self)] if path is None else path
         self.path_tiles = [self.yx_key()] if path_tiles is None else path_tiles
-        self.cheated = None
+        self.cheat = None
 
     def clone(self, dyx=None, grid=None):
         if dyx is None:
@@ -39,7 +39,7 @@ class GridRobot:
             grid = self.grid
         cloned = GridRobot(self.y, self.x, dyx, grid, self.cost_calc_fn, turn_cost_fn=self.turn_cost_fn, wrap=self.wrap,
                            cost=self.cost, path=self.path.copy(), path_tiles=self.path_tiles.copy())
-        cloned.cheated = self.cheated
+        cloned.cheat = self.cheat
         return cloned
 
     def set_dir(self, dyx):
@@ -64,16 +64,16 @@ class GridRobot:
             self.path_tiles.append(self.yx_key())
 
     def jump(self, ydiff, xdiff):
-        self.cheated = 'CHEAT: ' + self.yx_key() + '->'
+        self.cheat = 'CHEAT: ' + self.yx_key() + '->'
         self.y += ydiff
         self.x += xdiff
         amount = abs(ydiff) + abs(xdiff)
-        self.cheated += self.yx_key() + '(' + str(ydiff) + ',' + str(xdiff) + ')'
+        self.cheat += self.yx_key() + '(' + str(ydiff) + ',' + str(xdiff) + ')'
         if self.cost_calc_fn is not None:
             self.cost += self.cost_calc_fn(abs(amount))
 
-            self.path.append(self.cheated)
-            self.path_tiles.append(self.cheated)
+            self.path.append(self.cheat)
+            self.path_tiles.append(self.cheat)
 
             self.path.append(str(self))
             self.path_tiles.append(self.yx_key())

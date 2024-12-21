@@ -11,7 +11,7 @@ sys.setrecursionlimit(15000000)
 test_input = open('day20-testinput.txt').read().strip()
 real_input = open('day20-input.txt').read().strip()
 
-DEBUG = True
+DEBUG = False
 
 
 def parse_input(input):
@@ -25,7 +25,7 @@ def get_next_dirs_4(robot: GridRobot, max_cheat_dist):
     clones_in_bounds = [clone for clone in clones if not clone.out_of_bounds()]
     options = [clone for clone in clones_in_bounds if clone.tile_value() == '.']
 
-    if max_cheat_dist > 1 and robot.cheated is None:
+    if max_cheat_dist > 1 and robot.cheat is None:
         for x in range(-max_cheat_dist, max_cheat_dist + 1):
             remaining = max_cheat_dist - abs(x)
             for y in range(-remaining, remaining + 1):
@@ -51,7 +51,7 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
     remaining_cost_map = {}  # yx_key to min_remaining_cost
 
     def insert_sorted(rob):
-        cheated = rob.cheated is not None
+        cheated = rob.cheat is not None
         if DEBUG: assert rob.yx_key() not in rob.path_tiles[:-1]
         if DEBUG: assert next_key not in found_states[cheated]
         found_states[cheated][next_key] = next_r
@@ -85,7 +85,7 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
             if next_key in found_states[False]:
                 if DEBUG: assert found_states[False][next_key].cost <= next_r.cost
                 continue
-            if next_r.cheated is None:
+            if next_r.cheat is None:
                 insert_sorted(next_r)
                 continue
             if next_key in found_states[True]:
@@ -104,29 +104,35 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
 
 
 def gather_eq_tiles(solutions, cheater_eq_map, found_states, max_cost):
-    # max_cost += 1
     print('gathering results')
     cheats = {}
-    if (DEBUG): print('solutions', [(sol.cheated, max_cost - sol.cost) for sol in solutions])
+    if (DEBUG): print('solutions', [(sol.cheat, max_cost - sol.cost) for sol in solutions])
     if (DEBUG): print('solutions paths\n' + '\n'.join([print_path(sol) for sol in solutions]))
     for sol in solutions:
         saved = (max_cost - (sol.cost + 0))
-        cheats[sol.cheated] = saved
-    options = [(0, solution) for solution in solutions if solution.cheated]
+        cheats[sol.cheat] = saved
+    options = [(0, solution) for solution in solutions if solution.cheat]
+    print('gathering min_remaining_for_tile_map')
 
     min_remaining_for_tile_map = {}
     min_options = options.copy()
     done_robots = set()
+    sortkey = lambda el: el[0]
     while len(min_options):
+        min_options.sort(key=sortkey, reverse=True)
         remaining, curr = min_options.pop()
         curr_key = curr.yx_key()
         if curr_key in min_remaining_for_tile_map and min_remaining_for_tile_map[curr_key] < remaining:
             remaining = min_remaining_for_tile_map[curr_key]
         else:
             min_remaining_for_tile_map[curr_key] = remaining
-        for key in reversed(curr.path_tiles[:-1]):
+        assert not curr.path_tiles[-1].startswith('CHEAT')
+        for index, key in enumerate(reversed(curr.path_tiles[:-1])):
             if key.startswith('CHEAT'):
-                continue
+                break
+            new_min_remaining = remaining + 1 + index
+            if key not in min_remaining_for_tile_map or min_remaining_for_tile_map[key]> new_min_remaining:
+                min_remaining_for_tile_map[key] = new_min_remaining
             if key not in cheater_eq_map:
                 continue
             subs = cheater_eq_map[key]
@@ -134,8 +140,10 @@ def gather_eq_tiles(solutions, cheater_eq_map, found_states, max_cost):
                 if sub in done_robots:
                     continue
                 done_robots.add(sub)
-                min_options.append((remaining + 1, sub))
-    print('min_remaining_for_tile_map done', min_remaining_for_tile_map)
+                min_options.append((remaining + index + 1, sub))
+
+    print('min_remaining_for_tile_map done')
+    if DEBUG: print(min_remaining_for_tile_map)
     done_robots = set()
     while len(options):
         (nb_tiles_backtracked, robot) = options.pop()
@@ -146,25 +154,24 @@ def gather_eq_tiles(solutions, cheater_eq_map, found_states, max_cost):
         assert not robot.path_tiles[-1].startswith('CHEAT')
         for index, tile_key in enumerate(reversed(robot.path_tiles[:-1])):
             if tile_key.startswith('CHEAT'): break
-            for eq in cheater_eq_map[tile_key]:
-                if eq in done_robots:
+            for cheater in cheater_eq_map[tile_key]:
+                if cheater in done_robots:
                     continue
-                done_robots.add(eq)
-                eq_backtracked = nb_tiles_backtracked + index + 1
+                done_robots.add(cheater)
                 min_remaining = min_remaining_for_tile_map[tile_key]
-                if eq.cost + min_remaining > max_cost:
+                if cheater.cost + min_remaining > max_cost:
                     continue
-                new_saved = max_cost - (eq.cost + min_remaining)
-                if eq.cheated not in cheats or cheats[eq.cheated] < new_saved:
-                    cheats[eq.cheated] = new_saved
-                options.append((min_remaining, eq))
+                new_saved = max_cost - (cheater.cost + min_remaining)
+                if cheater.cheat not in cheats or cheats[cheater.cheat] < new_saved:
+                    cheats[cheater.cheat] = new_saved
+                options.append((min_remaining, cheater))
 
     # print('cheats1', len(cheats), cheats)
     return cheats
 
 
 def print_path(sol):
-    return ((sol.cheated or '') + ':' + str(sol.cost)).ljust(30) + str(sol.path_tiles)
+    return ((sol.cheat or '') + ':' + str(sol.cost)).ljust(30) + str(sol.path_tiles)
 
 
 def find_all(start_robot, end_robot, grid, max_cost, max_cheat_dist):
@@ -235,18 +242,18 @@ assert part12(real_input, 9456, 0, 1) == 1
 assert part12(real_input, 9456, 1, 2) >= 1441
 assert part12(real_input, 9456, 100, 2) == 1441
 
-assert part12(test_input, 84, 50, 20) >= 32 + 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 52, 20) >= 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 54, 20) >= 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 56, 20) >= 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 58, 20) >= 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 60, 20) >= 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 62, 20) >= 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 64, 20) >= 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 66, 20) >= 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 68, 20) >= 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 70, 20) >= 12 + 22 + 4 + 3
-assert part12(test_input, 84, 72, 20) >= 22 + 4 + 3
-assert part12(test_input, 84, 74, 20) >= 4 + 3
-assert part12(test_input, 84, 76, 20) >= 3
+assert part12(test_input, 84, 50, 20) == 32 + 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 52, 20) == 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 54, 20) == 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 56, 20) == 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 58, 20) == 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 60, 20) == 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 62, 20) == 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 64, 20) == 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 66, 20) == 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 68, 20) == 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 70, 20) == 12 + 22 + 4 + 3
+assert part12(test_input, 84, 72, 20) == 22 + 4 + 3
+assert part12(test_input, 84, 74, 20) == 4 + 3
+assert part12(test_input, 84, 76, 20) == 3
 part12(real_input, 9456, 100, 20)
