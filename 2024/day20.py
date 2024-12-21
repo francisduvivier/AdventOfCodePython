@@ -23,8 +23,6 @@ def parse_input(input):
 def get_next_dirs_4(robot: GridRobot, max_cheat_dist):
     clones = [robot.clone_forward(dir) for dir in DIRS]
     clones_in_bounds = [clone for clone in clones if not clone.out_of_bounds()]
-    for n in clones_in_bounds:
-        n.cheated = robot.cheated
     options = [clone for clone in clones_in_bounds if clone.tile_value() == '.']
 
     if max_cheat_dist > 1 and robot.cheated is None:
@@ -136,7 +134,6 @@ def gather_eq_tiles(solutions, eq_map, found_states, max_cost):
 def find_all(start_robot, end_robot, grid, max_cost, max_cheat_dist):
     start_robot.grid = grid
     end_robot.grid = grid
-    start_robot.cheated = None
 
     def end_check(test_r):
         return test_r.x == end_robot.x and test_r.y == end_robot.y

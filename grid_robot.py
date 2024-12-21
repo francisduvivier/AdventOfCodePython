@@ -30,6 +30,7 @@ class GridRobot:
         self.wrap = wrap
         self.path = [str(self)] if path is None else path
         self.path_tiles = [self.yx_key()] if path_tiles is None else path_tiles
+        self.cheated = None
 
     def clone(self, dyx=None, grid=None):
         if dyx is None:
@@ -38,6 +39,7 @@ class GridRobot:
             grid = self.grid
         cloned = GridRobot(self.y, self.x, dyx, grid, self.cost_calc_fn, turn_cost_fn=self.turn_cost_fn, wrap=self.wrap,
                            cost=self.cost, path=self.path.copy(), path_tiles=self.path_tiles.copy())
+        cloned.cheated = self.cheated
         return cloned
 
     def set_dir(self, dyx):
