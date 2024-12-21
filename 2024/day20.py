@@ -1,5 +1,4 @@
 from functools import cache
-from logging import DEBUG
 
 import numpy as np
 
@@ -11,13 +10,13 @@ sys.setrecursionlimit(15000000)
 test_input = open('day20-testinput.txt').read().strip()
 real_input = open('day20-input.txt').read().strip()
 
-DEBUG = False
+DEBUG = True
 
 
 def parse_input(input):
     lines = input.splitlines()
     char_matrix = [[char for char in line] for line in lines]
-    return np.array(char_matrix)
+    return np.array(char_matrix)[1:-1,1:-1]
 
 
 def get_next_dirs_4(robot: GridRobot, max_cheat_dist):
@@ -94,16 +93,21 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
             insert_sorted(next_r)
 
     cheats = gather_eq_tiles(solutions, eq_map, found_states[True], max_cost)
+
     # for key in eq_map:
     #     for eq in eq_map[key] :
     #         cheats.add(eq.cheated)
-    # print('cheats2',len(cheats), cheats)
+    if DEBUG: print('cheats',len(cheats), cheats)
     return cheats
 
 
 def gather_eq_tiles(solutions, eq_map, found_states, max_cost):
     print('gathering results')
-    cheats = set(sol.cheated for sol in solutions)
+    cheats ={}
+    if(DEBUG): print('solutions',[(sol.cheated, max_cost - sol.cost) for sol in solutions])
+    for sol in solutions:
+        saved = (max_cost - (sol.cost + 0))
+        cheats[sol.cheated] = saved
     options = [(0, solution) for solution in solutions if solution.cheated]
     tiles_checked = {}
     while len(options):
@@ -124,7 +128,10 @@ def gather_eq_tiles(solutions, eq_map, found_states, max_cost):
                 # assert not eq.path_tiles[-1].startswith('CHEAT')
                 eq_backtracked = nb_tiles_backtracked + index + 1
                 if eq.cost <= max_cost - eq_backtracked:
-                    cheats.add(eq.cheated)
+                    saved = (max_cost - (eq.cost + eq_backtracked))
+                    if eq.cheated in cheats and cheats[eq.cheated] > saved:
+                        saved = cheats[eq.cheated]
+                    cheats[eq.cheated] = saved
                     options.append((eq_backtracked, eq))
 
     # print('cheats1', len(cheats), cheats)
@@ -132,6 +139,7 @@ def gather_eq_tiles(solutions, eq_map, found_states, max_cost):
 
 
 def find_all(start_robot, end_robot, grid, max_cost, max_cheat_dist):
+
     start_robot.grid = grid
     end_robot.grid = grid
 
@@ -184,14 +192,14 @@ def part12(input, best_non_cheat, improvement_needed, max_cheat_dist=1):
 
 #
 assert part12(test_input, 84, 0, 1) == 1
-# assert part12(test_input, 84, 2, 2) >= 14 + 14 + 16
-# assert part12(test_input, 84, 4, 2) >= 14 + 16
-# assert part12(test_input, 84, 6, 2) >= 16
-# assert part12(test_input, 84, 8, 2) >= 14
-# assert part12(test_input, 84, 10, 2) >= 10
-# assert part12(test_input, 84, 12, 2) >= 8
-# assert part12(test_input, 84, 20, 2) >= 5
-# assert part12(test_input, 84, 36, 2) >= 4
+assert part12(test_input, 84, 2, 2) >= 14 + 14 + 16
+assert part12(test_input, 84, 4, 2) >= 14 + 16
+assert part12(test_input, 84, 6, 2) >= 16
+assert part12(test_input, 84, 8, 2) >= 14
+assert part12(test_input, 84, 10, 2) >= 10
+assert part12(test_input, 84, 12, 2) >= 8
+assert part12(test_input, 84, 20, 2) >= 5
+assert part12(test_input, 84, 36, 2) >= 4
 assert part12(test_input, 84, 38, 2) >= 3
 assert part12(test_input, 84, 40, 2) >= 2
 assert part12(test_input, 84, 64, 2) == 1
