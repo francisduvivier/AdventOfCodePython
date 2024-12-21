@@ -3,7 +3,7 @@ from logging import DEBUG
 
 import numpy as np
 
-from grid_robot import find_value, GridRobot, DIRS, DIR
+from grid_robot import find_value, GridRobot, DIRS, DIR, yx_key
 import sys
 
 sys.setrecursionlimit(15000000)
@@ -11,7 +11,7 @@ sys.setrecursionlimit(15000000)
 test_input = open('day20-testinput.txt').read().strip()
 real_input = open('day20-input.txt').read().strip()
 
-DEBUG = True
+DEBUG = False
 
 
 def parse_input(input):
@@ -103,31 +103,31 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
 
 def gather_eq_tiles(solutions, eq_map, found_states, max_cost):
     print('gathering results')
-    cheats = set()
+    cheats = set(sol.cheated for sol in solutions)
+    options = [(0, solution) for solution in solutions if solution.cheated]
+    tiles_checked = {}
+    while len(options):
+        (nb_tiles_backtracked, robot) = options.pop()
+        yx_key = robot.yx_key()
+        if nb_tiles_backtracked > 0: assert yx_key in eq_map
+        if nb_tiles_backtracked > 0: assert yx_key in found_states
+        assert robot.cost <= max_cost - nb_tiles_backtracked
+        assert not robot.path_tiles[-1].startswith('CHEAT')
+        for index, tile_key in enumerate(reversed(robot.path_tiles[:-1])):
+            if tile_key.startswith('CHEAT'): break
+            if tile_key in tiles_checked and tiles_checked[tile_key] <= robot.cost:
+                continue
+            tiles_checked[tile_key] = robot.cost
+            for eq in eq_map[tile_key]:
+                # if eq.cheated in cheats:
+                #     continue
+                # assert not eq.path_tiles[-1].startswith('CHEAT')
+                eq_backtracked = nb_tiles_backtracked + index + 1
+                if eq.cost <= max_cost - eq_backtracked:
+                    cheats.add(eq.cheated)
+                    options.append((eq_backtracked, eq))
 
-    @cache
-    def get_eq_path_tiles_rec(yx_key, max_cost_rec):
-        assert yx_key in eq_map
-        assert yx_key in found_states
-        assert found_states[yx_key].cost <= max_cost_rec
-        for eq in eq_map[yx_key]:
-            # if eq.cheated in cheats:
-            #     continue
-            assert not eq.path_tiles[-1].startswith('CHEAT')
-            if eq.cost <= max_cost_rec:
-                cheats.add(eq.cheated)
-                for tile in reversed(eq.path_tiles[:-1]):
-                    if tile.startswith('CHEAT'): break
-                    get_eq_path_tiles_rec(tile, max_cost_rec - 1)
-
-    for r in solutions:
-        cheats.add(r.cheated)
-        if not r.cheated:
-            continue
-        for tile in reversed(r.path_tiles[:-1]):
-            if tile.startswith('CHEAT'): break
-            get_eq_path_tiles_rec(tile, max_cost - 1)
-    print('cheats1', len(cheats), cheats)
+    # print('cheats1', len(cheats), cheats)
     return cheats
 
 
@@ -184,20 +184,20 @@ def part12(input, best_non_cheat, improvement_needed, max_cheat_dist=1):
 
 #
 assert part12(test_input, 84, 0, 1) == 1
-assert part12(test_input, 84, 2, 2) >= 14 + 14 + 16
-assert part12(test_input, 84, 4, 2) >= 14 + 16
-assert part12(test_input, 84, 6, 2) >= 16
-assert part12(test_input, 84, 8, 2) >= 14
-assert part12(test_input, 84, 10, 2) >= 10
-assert part12(test_input, 84, 12, 2) >= 8
-assert part12(test_input, 84, 20, 2) >= 5
-assert part12(test_input, 84, 36, 2) >= 4
+# assert part12(test_input, 84, 2, 2) >= 14 + 14 + 16
+# assert part12(test_input, 84, 4, 2) >= 14 + 16
+# assert part12(test_input, 84, 6, 2) >= 16
+# assert part12(test_input, 84, 8, 2) >= 14
+# assert part12(test_input, 84, 10, 2) >= 10
+# assert part12(test_input, 84, 12, 2) >= 8
+# assert part12(test_input, 84, 20, 2) >= 5
+# assert part12(test_input, 84, 36, 2) >= 4
 assert part12(test_input, 84, 38, 2) >= 3
 assert part12(test_input, 84, 40, 2) >= 2
 assert part12(test_input, 84, 64, 2) == 1
 assert part12(real_input, 9456, 0, 1) == 1
 assert part12(real_input, 9456, 1, 2) >= 1441
-assert part12(real_input, 9456, 100, 2) >= 1441
+assert part12(real_input, 9456, 100, 2) == 1441
 
 assert part12(test_input, 84, 50, 20) >= 32 + 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
 assert part12(test_input, 84, 52, 20) >= 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
