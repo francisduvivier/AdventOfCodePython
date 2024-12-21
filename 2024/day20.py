@@ -120,13 +120,15 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
         popped_key = popped_rob.yx_key()
         end_found = end_check(popped_rob)
         remaining = 0
-        if popped_rob.cheat and popped_key in remaining_cost_map:
+        if popped_key in remaining_cost_map:
             remaining = remaining_cost_map[popped_key]
-            found_states[True][popped_key] = popped_rob
-            cheater_eq_map[popped_key] = []
+            cheated = popped_rob.cheat is not None
+            found_states[cheated][popped_key] = popped_rob
+            if cheated:
+                cheater_eq_map[popped_key] = []
             if remaining + popped_rob.cost <= max_cost:
                 end_found = True
-            else:
+            elif cheated:
                 continue
         if end_found:
             if remaining == 0: print('found path', popped_rob, popped_rob.cost)
