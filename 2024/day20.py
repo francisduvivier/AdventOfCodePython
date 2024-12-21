@@ -134,46 +134,19 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
 
     for r in solutions:
         update_remaining_costs(r)
-    cheats = gather_eq_tiles(solutions, cheater_eq_map, found_states[True], max_cost, remaining_cost_map)
+    cheats = gather_eq_tiles(solutions, cheater_eq_map, max_cost, remaining_cost_map)
 
     if DEBUG: print('cheats', len(cheats), cheats)
     return cheats
 
 
-def gather_eq_tiles(solutions, cheater_eq_map, found_states, max_cost, min_cost_map):
-    print('gathering results')
-    cheats = {}
-    if (DEBUG): print('solutions', [(sol.cheat, max_cost - sol.cost) for sol in solutions])
-    if (DEBUG): print('solutions paths\n' + '\n'.join([print_path(sol) for sol in solutions]))
-    for sol in solutions:
-        saved = (max_cost - (sol.cost + 0))
-        cheats[sol.cheat] = saved
-    options = [(0, solution) for solution in solutions if solution.cheat]
-    print('gathering min_remaining_for_tile_map')
-
-    print('min_remaining_for_tile_map done')
-    if DEBUG: print(min_cost_map)
-    done_robots = set()
-    while len(options):
-        (nb_tiles_backtracked, robot) = options.pop()
-        yx_key = robot.yx_key()
-        if nb_tiles_backtracked > 0: assert yx_key in cheater_eq_map
-        if nb_tiles_backtracked > 0: assert yx_key in found_states
-        if DEBUG: assert robot.cost <= max_cost - nb_tiles_backtracked
-        if DEBUG: assert not robot.path_tiles[-1].startswith('CHEAT')
-        for index, tile_key in enumerate(reversed(robot.path_tiles[:-1])):
-            if tile_key.startswith('CHEAT'): break
-            for cheater in cheater_eq_map[tile_key]:
-                if cheater in done_robots:
-                    continue
-                done_robots.add(cheater)
-                min_remaining = min_cost_map[tile_key]
-                if cheater.cost + min_remaining > max_cost:
-                    continue
-                new_saved = max_cost - (cheater.cost + min_remaining)
-                if cheater.cheat not in cheats or cheats[cheater.cheat] < new_saved:
-                    cheats[cheater.cheat] = new_saved
-                options.append((min_remaining, cheater))
+def gather_eq_tiles(solutions, cheater_eq_map, max_cost, min_cost_map):
+    cheats  = set([r.cheat for r in solutions])
+    for option in min_cost_map:
+        if option in cheater_eq_map:
+            for cheater in cheater_eq_map[option]:
+                if cheater.cost+ min_cost_map[option] <= max_cost:
+                    cheats.add(cheater.cheat)
 
     # print('cheats1', len(cheats), cheats)
     return cheats
