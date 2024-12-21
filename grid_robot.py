@@ -19,7 +19,7 @@ DIR_LETTERS = [key for key in DIR.keys()]
 
 class GridRobot:
     def __init__(self, row, col, dyx: {'dy': int, 'dx': int} = DIR['^'], grid: np.array or None = None,
-                 cost_calc_fn=None, turn_cost_fn=None, wrap=False, cost=0, path = None, path_tiles = None):
+                 cost_calc_fn=None, turn_cost_fn=None, wrap=False, cost=0, path=None, path_tiles=None):
         self.x = col
         self.y = row
         self.set_dir(dyx)
@@ -28,15 +28,16 @@ class GridRobot:
         self.cost_calc_fn = cost_calc_fn
         self.turn_cost_fn = turn_cost_fn
         self.wrap = wrap
-        self.path = [] if path is None else path
+        self.path = [str(self)] if path is None else path
         self.path_tiles = [self.yx_key()] if path_tiles is None else path_tiles
+
     def clone(self, dyx=None, grid=None):
         if dyx is None:
             dyx = self.dyx
         if grid is None:
             grid = self.grid
         cloned = GridRobot(self.y, self.x, dyx, grid, self.cost_calc_fn, turn_cost_fn=self.turn_cost_fn, wrap=self.wrap,
-                           cost=self.cost, path= self.path.copy(), path_tiles = self.path_tiles.copy())
+                           cost=self.cost, path=self.path.copy(), path_tiles=self.path_tiles.copy())
         return cloned
 
     def set_dir(self, dyx):
@@ -56,7 +57,22 @@ class GridRobot:
         if self.wrap:
             self.y = self.y % len(self.grid)
         if self.cost_calc_fn is not None:
-            self.cost += self.cost_calc_fn(amount)
+            self.cost += self.cost_calc_fn(abs(amount))
+            self.path.append(str(self))
+            self.path_tiles.append(self.yx_key())
+
+    def jump(self, ydiff, xdiff):
+        self.cheated = 'CHEAT: ' + self.yx_key() + '->'
+        self.y += ydiff
+        self.x += xdiff
+        amount = abs(ydiff) + abs(xdiff)
+        self.cheated += self.yx_key() + '(' + str(ydiff) + ',' + str(xdiff) + ')'
+        if self.cost_calc_fn is not None:
+            self.cost += self.cost_calc_fn(abs(amount))
+
+            self.path.append(self.cheated)
+            self.path_tiles.append(self.cheated)
+
             self.path.append(str(self))
             self.path_tiles.append(self.yx_key())
 

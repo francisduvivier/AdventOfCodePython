@@ -88,10 +88,6 @@ def part12(input):
             if end_found:
                 best_robot = next_r
                 print('found path', best_robot, best_robot.cost)
-    result_set = set(best_robot.path_tiles)
-    for path_item in best_robot.path:
-        for eq_robot in eq_map[path_item]:
-            result_set = result_set.union(set(eq_robot.path_tiles))
 
     def get_eq_path_tiles_rec(r_state):
         result_set = set()
