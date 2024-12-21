@@ -122,16 +122,16 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
         remaining = 0
         # if popped_rob.cheat and popped_key in remaining_cost_map:
         #     remaining = remaining_cost_map[popped_key]
-        #     update_remaining_costs(remaining, popped_rob)
         #     if remaining + popped_rob.cost <= max_cost:
-        #         great_cheats.add(popped_rob.cheat)
-        #     continue
-        #     # assert remaining + popped_rob.cost <= max_cost
+        #         end_found = True
+        #     else:
+        #         continue
+        #         # assert remaining + popped_rob.cost <= max_cost
         if end_found:
-            if DEBUG: print('found path', popped_rob, popped_rob.cost)
+            if DEBUG and remaining == 0: print('found path', popped_rob, popped_rob.cost)
             if popped_rob.cheat not in great_cheats:
                 great_cheats.add(popped_rob.cheat)
-                solutions.append((remaining, popped_rob)) # WHY IS THIS NEEDED
+                solutions.append((remaining, popped_rob))  # WHY IS THIS NEEDED
             update_remaining_costs(remaining, popped_rob)
             continue
         if popped_key in found_states[False]:
