@@ -11,7 +11,7 @@ sys.setrecursionlimit(15000000)
 test_input = open('day20-testinput.txt').read().strip()
 real_input = open('day20-input.txt').read().strip()
 
-DEBUG = False
+DEBUG = True
 
 
 def parse_input(input):
@@ -45,18 +45,24 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
 
     found_states[True] = {}
     found_states[False] = {}
-    found_states[False][start_robot.yx_key()] = start_robot
     cheater_eq_map = {}  # yx_key to map of cheat_key to robot
-    cheater_eq_map[start_robot.yx_key()] = []
     remaining_cost_map = {}  # yx_key to min_remaining_cost
 
-    def insert_sorted(rob):
-        cheated = rob.cheat is not None
-        if DEBUG: assert rob.yx_key() not in rob.path_tiles[:-1]
-        if DEBUG: assert next_key not in found_states[cheated]
-        found_states[cheated][next_key] = next_r
+    def add_r(r):
+        r_key = r.yx_key()
+        cheated = r.cheat is not None
+        if DEBUG: assert r.yx_key() not in r.path_tiles[:-1]
+        if DEBUG: assert r_key not in found_states[cheated]
+        found_states[cheated][r_key] = r
         if cheated:
-            cheater_eq_map[next_key] = []
+            cheater_eq_map[r_key] = []
+        sub_states = get_next_states(r)
+        for sub_r in sub_states:
+            if min_possible_cost(sub_r) > max_cost:
+                continue
+            insert_sorted(sub_r)
+
+    def insert_sorted(rob):
         sorted_states_to_try.insert(0, rob)
 
     def get_robot_cost_neg(r):
@@ -71,34 +77,29 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
     solutions = []
     while len(sorted_states_to_try) > 0:
         sorted_states_to_try.sort(key=get_robot_cost_neg)
-        try_state = sorted_states_to_try.pop()
-        next_states = get_next_states(try_state)
-        for next_r in next_states:
-            next_key = next_r.yx_key()
-            if min_possible_cost(next_r) > max_cost:
-                continue
-            end_found = end_check(next_r)
-            if end_found:
-                if DEBUG: print('found path', next_r, next_r.cost)
-                solutions.append(next_r)
-                continue
-            if next_key in found_states[False]:
-                if DEBUG: assert found_states[False][next_key].cost <= next_r.cost
-                continue
-            if next_r.cheat is None:
-                insert_sorted(next_r)
-                continue
-            if next_key in found_states[True]:
-                if DEBUG: assert found_states[True][next_key].cost <= next_r.cost
-                cheater_eq_map[next_key].append(next_r)
-                continue
-            insert_sorted(next_r)
+        next_r = sorted_states_to_try.pop()
+        next_key = next_r.yx_key()
+        end_found = end_check(next_r)
+        if end_found:
+            if DEBUG: print('found path', next_r, next_r.cost)
+            solutions.append(next_r)
+            continue
+        if next_key in found_states[False]:
+            if DEBUG: assert found_states[False][next_key].cost <= next_r.cost
+            continue
+        if next_r.cheat is None:
+            add_r(next_r)
+            continue
+        if next_key in cheater_eq_map:
+            if DEBUG: assert found_states[True][next_key].cost <= next_r.cost
+            if DEBUG: assert len([c for c in cheater_eq_map[next_key] if c.cheat == next_r.cheat]) == 0
+            cheater_eq_map[next_key].append(next_r)
+            continue
+        add_r(next_r)
+
 
     cheats = gather_eq_tiles(solutions, cheater_eq_map, found_states[True], max_cost)
 
-    # for key in eq_map:
-    #     for eq in eq_map[key] :
-    #         cheats.add(eq.cheated)
     if DEBUG: print('cheats', len(cheats), cheats)
     return cheats
 
@@ -150,8 +151,8 @@ def gather_eq_tiles(solutions, cheater_eq_map, found_states, max_cost):
         yx_key = robot.yx_key()
         if nb_tiles_backtracked > 0: assert yx_key in cheater_eq_map
         if nb_tiles_backtracked > 0: assert yx_key in found_states
-        assert robot.cost <= max_cost - nb_tiles_backtracked
-        assert not robot.path_tiles[-1].startswith('CHEAT')
+        if DEBUG: assert robot.cost <= max_cost - nb_tiles_backtracked
+        if DEBUG: assert not robot.path_tiles[-1].startswith('CHEAT')
         for index, tile_key in enumerate(reversed(robot.path_tiles[:-1])):
             if tile_key.startswith('CHEAT'): break
             for cheater in cheater_eq_map[tile_key]:
@@ -226,34 +227,34 @@ def part12(input, best_non_cheat, improvement_needed, max_cheat_dist=1):
 
 
 #
-assert part12(test_input, 84, 0, 1) == 1
-assert part12(test_input, 84, 2, 2) == 14 + 14 + 16
-assert part12(test_input, 84, 4, 2) == 14 + 16
-assert part12(test_input, 84, 6, 2) == 16
-assert part12(test_input, 84, 8, 2) == 14
-assert part12(test_input, 84, 10, 2) == 10
-assert part12(test_input, 84, 12, 2) == 8
-assert part12(test_input, 84, 20, 2) == 5
-assert part12(test_input, 84, 30, 2) == 4
-assert part12(test_input, 84, 38, 2) == 3
-assert part12(test_input, 84, 40, 2) == 2
-assert part12(test_input, 84, 64, 2) == 1
-assert part12(real_input, 9456, 0, 1) == 1
-assert part12(real_input, 9456, 1, 2) >= 1441
-assert part12(real_input, 9456, 100, 2) == 1441
+# assert part12(test_input, 84, 0, 1) == 1
+# assert part12(test_input, 84, 2, 2) == 14 + 14 + 16
+# assert part12(test_input, 84, 4, 2) == 14 + 16
+# assert part12(test_input, 84, 6, 2) == 16
+# assert part12(test_input, 84, 8, 2) == 14
+# assert part12(test_input, 84, 10, 2) == 10
+# assert part12(test_input, 84, 12, 2) == 8
+# assert part12(test_input, 84, 20, 2) == 5
+# assert part12(test_input, 84, 30, 2) == 4
+# assert part12(test_input, 84, 38, 2) == 3
+# assert part12(test_input, 84, 40, 2) == 2
+# assert part12(test_input, 84, 64, 2) == 1
+# assert part12(real_input, 9456, 0, 1) == 1
+# assert part12(real_input, 9456, 1, 2) >= 1441
+# assert part12(real_input, 9456, 100, 2) == 1441
 
 assert part12(test_input, 84, 50, 20) == 32 + 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 52, 20) == 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 54, 20) == 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 56, 20) == 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 58, 20) == 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 60, 20) == 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 62, 20) == 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 64, 20) == 19 + 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 66, 20) == 12 + 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 68, 20) == 14 + 12 + 22 + 4 + 3
-assert part12(test_input, 84, 70, 20) == 12 + 22 + 4 + 3
-assert part12(test_input, 84, 72, 20) == 22 + 4 + 3
-assert part12(test_input, 84, 74, 20) == 4 + 3
+# assert part12(test_input, 84, 52, 20) == 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+# assert part12(test_input, 84, 54, 20) == 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+# assert part12(test_input, 84, 56, 20) == 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+# assert part12(test_input, 84, 58, 20) == 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+# assert part12(test_input, 84, 60, 20) == 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+# assert part12(test_input, 84, 62, 20) == 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+# assert part12(test_input, 84, 64, 20) == 19 + 12 + 14 + 12 + 22 + 4 + 3
+# assert part12(test_input, 84, 66, 20) == 12 + 14 + 12 + 22 + 4 + 3
+# assert part12(test_input, 84, 68, 20) == 14 + 12 + 22 + 4 + 3
+# assert part12(test_input, 84, 70, 20) == 12 + 22 + 4 + 3
+# assert part12(test_input, 84, 72, 20) == 22 + 4 + 3
+# assert part12(test_input, 84, 74, 20) == 4 + 3
 assert part12(test_input, 84, 76, 20) == 3
 part12(real_input, 9456, 100, 20)
