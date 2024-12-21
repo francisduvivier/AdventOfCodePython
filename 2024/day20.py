@@ -16,7 +16,7 @@ DEBUG = True
 def parse_input(input):
     lines = input.splitlines()
     char_matrix = [[char for char in line] for line in lines]
-    return np.array(char_matrix)[1:-1,1:-1]
+    return np.array(char_matrix)[1:-1, 1:-1]
 
 
 def get_next_dirs_4(robot: GridRobot, max_cheat_dist):
@@ -50,9 +50,9 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
     remaining_cost_map = {}  # yx_key to min_remaining_cost
 
     def insert_sorted(rob):
-        assert next_key not in found_states[rob.cheated is not None]
-        assert rob.yx_key() not in rob.path_tiles[:-1]
         cheated = rob.cheated is not None
+        if DEBUG: assert rob.yx_key() not in rob.path_tiles[:-1]
+        if DEBUG: assert next_key not in found_states[cheated]
         found_states[cheated][next_key] = next_r
         if cheated:
             eq_map[next_key] = []
@@ -88,6 +88,7 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
                 insert_sorted(next_r)
                 continue
             if next_key in found_states[True]:
+                assert found_states[True][next_key].cost <= next_r.cost
                 eq_map[next_key].append(next_r)
                 continue
             insert_sorted(next_r)
@@ -97,14 +98,14 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
     # for key in eq_map:
     #     for eq in eq_map[key] :
     #         cheats.add(eq.cheated)
-    if DEBUG: print('cheats',len(cheats), cheats)
+    if DEBUG: print('cheats', len(cheats), cheats)
     return cheats
 
 
 def gather_eq_tiles(solutions, eq_map, found_states, max_cost):
     print('gathering results')
-    cheats ={}
-    if(DEBUG): print('solutions',[(sol.cheated, max_cost - sol.cost) for sol in solutions])
+    cheats = {}
+    if (DEBUG): print('solutions', [(sol.cheated, max_cost - sol.cost) for sol in solutions])
     for sol in solutions:
         saved = (max_cost - (sol.cost + 0))
         cheats[sol.cheated] = saved
@@ -139,7 +140,6 @@ def gather_eq_tiles(solutions, eq_map, found_states, max_cost):
 
 
 def find_all(start_robot, end_robot, grid, max_cost, max_cheat_dist):
-
     start_robot.grid = grid
     end_robot.grid = grid
 
