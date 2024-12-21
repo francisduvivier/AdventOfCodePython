@@ -52,6 +52,8 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
         if DEBUG: assert not r.path_tiles[-1].startswith('CHEAT')
         # if DEBUG: assert not r.cost + rem <= max_cost
         done_robots_min_remaining = set()
+        if DEBUG: assert r.yx_key() not in remaining_cost_map or remaining_cost_map[r.yx_key()] >= rem
+        remaining_cost_map[r.yx_key()] = rem
         min_options = [(rem, r)]
         sortkey = lambda el: el[0]
         while len(min_options):
@@ -120,13 +122,16 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
         popped_key = popped_rob.yx_key()
         end_found = end_check(popped_rob)
         remaining = 0
-        # if popped_rob.cheat and popped_key in remaining_cost_map:
-        #     remaining = remaining_cost_map[popped_key]
-        #     if remaining + popped_rob.cost <= max_cost:
-        #         end_found = True
-        #     else:
-        #         continue
-        #         # assert remaining + popped_rob.cost <= max_cost
+        if popped_rob.cheat and popped_key in remaining_cost_map:
+            remaining = remaining_cost_map[popped_key]
+            found_states[True][popped_key] = popped_rob
+            cheater_eq_map[popped_key] = []
+            if remaining + popped_rob.cost <= max_cost:
+                end_found = True
+            else:
+                update_remaining_costs(remaining, popped_rob)
+                continue
+                # assert remaining + popped_rob.cost <= max_cost
         if end_found:
             if remaining == 0: print('found path', popped_rob, popped_rob.cost)
             if popped_rob.cheat not in great_cheats:
