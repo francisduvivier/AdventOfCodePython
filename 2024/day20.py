@@ -50,7 +50,7 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
 
     def update_remaining_costs(r):
         done_robots_min_remaining = set()
-        min_options = [(0,r)]
+        min_options = [(0, r)]
         sortkey = lambda el: el[0]
         while len(min_options):
             min_options.sort(key=sortkey, reverse=True)
@@ -65,16 +65,20 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
                 if key.startswith('CHEAT'):
                     break
                 new_min_remaining = remaining + 1 + index
-                if key not in remaining_cost_map or remaining_cost_map[key]> new_min_remaining:
+                if key not in remaining_cost_map or remaining_cost_map[key] > new_min_remaining:
                     remaining_cost_map[key] = new_min_remaining
                 if key not in cheater_eq_map:
                     continue
                 subs = cheater_eq_map[key]
-                for sub in subs:
+                for sub in subs.copy():
                     if sub in done_robots_min_remaining:
                         continue
+                    if (sub.cost + new_min_remaining) > max_cost:
+                        subs.remove(sub)
+                        done_robots_min_remaining.add(sub)
                     done_robots_min_remaining.add(sub)
-                    min_options.append((remaining + index + 1, sub))
+                    min_options.append((new_min_remaining, sub))
+
     def add_r(r):
         r_key = r.yx_key()
         cheated = r.cheat is not None
@@ -146,8 +150,6 @@ def gather_eq_tiles(solutions, cheater_eq_map, found_states, max_cost, min_cost_
         cheats[sol.cheat] = saved
     options = [(0, solution) for solution in solutions if solution.cheat]
     print('gathering min_remaining_for_tile_map')
-
-
 
     print('min_remaining_for_tile_map done')
     if DEBUG: print(min_cost_map)
@@ -234,33 +236,33 @@ def part12(input, best_non_cheat, improvement_needed, max_cheat_dist=1):
 
 #
 assert part12(test_input, 84, 0, 1) == 1
-# assert part12(test_input, 84, 2, 2) == 14 + 14 + 16
-# assert part12(test_input, 84, 4, 2) == 14 + 16
-# assert part12(test_input, 84, 6, 2) == 16
-# assert part12(test_input, 84, 8, 2) == 14
-# assert part12(test_input, 84, 10, 2) == 10
-# assert part12(test_input, 84, 12, 2) == 8
-# assert part12(test_input, 84, 20, 2) == 5
-# assert part12(test_input, 84, 30, 2) == 4
-# assert part12(test_input, 84, 38, 2) == 3
-# assert part12(test_input, 84, 40, 2) == 2
-# assert part12(test_input, 84, 64, 2) == 1
-# assert part12(real_input, 9456, 0, 1) == 1
-# assert part12(real_input, 9456, 1, 2) >= 1441
-# assert part12(real_input, 9456, 100, 2) == 1441
+assert part12(test_input, 84, 2, 2) == 14 + 14 + 16
+assert part12(test_input, 84, 4, 2) == 14 + 16
+assert part12(test_input, 84, 6, 2) == 16
+assert part12(test_input, 84, 8, 2) == 14
+assert part12(test_input, 84, 10, 2) == 10
+assert part12(test_input, 84, 12, 2) == 8
+assert part12(test_input, 84, 20, 2) == 5
+assert part12(test_input, 84, 30, 2) == 4
+assert part12(test_input, 84, 38, 2) == 3
+assert part12(test_input, 84, 40, 2) == 2
+assert part12(test_input, 84, 64, 2) == 1
+assert part12(real_input, 9456, 0, 1) == 1
+assert part12(real_input, 9456, 1, 2) >= 1441
+assert part12(real_input, 9456, 100, 2) == 1441
 
 assert part12(test_input, 84, 50, 20) == 32 + 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 52, 20) == 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 54, 20) == 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 56, 20) == 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 58, 20) == 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 60, 20) == 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 62, 20) == 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 64, 20) == 19 + 12 + 14 + 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 66, 20) == 12 + 14 + 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 68, 20) == 14 + 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 70, 20) == 12 + 22 + 4 + 3
-# assert part12(test_input, 84, 72, 20) == 22 + 4 + 3
-# assert part12(test_input, 84, 74, 20) == 4 + 3
+assert part12(test_input, 84, 52, 20) == 31 + 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 54, 20) == 29 + 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 56, 20) == 39 + 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 58, 20) == 25 + 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 60, 20) == 23 + 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 62, 20) == 20 + 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 64, 20) == 19 + 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 66, 20) == 12 + 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 68, 20) == 14 + 12 + 22 + 4 + 3
+assert part12(test_input, 84, 70, 20) == 12 + 22 + 4 + 3
+assert part12(test_input, 84, 72, 20) == 22 + 4 + 3
+assert part12(test_input, 84, 74, 20) == 4 + 3
 assert part12(test_input, 84, 76, 20) == 3
 part12(real_input, 9456, 100, 20)
