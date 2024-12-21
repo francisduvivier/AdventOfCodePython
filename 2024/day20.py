@@ -114,7 +114,6 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
         return minimal_possible_cost_for_position(r)
 
     great_cheats = set()
-    solutions = []
     while len(sorted_states_to_try) > 0:
         sorted_states_to_try.sort(key=get_robot_cost_neg)
         popped_rob = sorted_states_to_try.pop()
@@ -128,14 +127,11 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
             if remaining + popped_rob.cost <= max_cost:
                 end_found = True
             else:
-                update_remaining_costs(remaining, popped_rob)
                 continue
-                # assert remaining + popped_rob.cost <= max_cost
         if end_found:
             if remaining == 0: print('found path', popped_rob, popped_rob.cost)
             if popped_rob.cheat not in great_cheats:
                 great_cheats.add(popped_rob.cheat)
-                solutions.append((remaining, popped_rob))  # WHY IS THIS NEEDED
             update_remaining_costs(remaining, popped_rob)
             continue
         if popped_key in found_states[False]:
@@ -151,25 +147,8 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
             continue
         add_r(popped_rob)
 
-    for rem, r in solutions:
-        update_remaining_costs(rem, r)
-    cheats = gather_eq_tiles(solutions, cheater_eq_map, max_cost, remaining_cost_map)
-    if DEBUG: print('cheats', len(cheats), cheats)
-    cheats = cheats.union(great_cheats)
-    if DEBUG: print('cheats.union(great_cheats)', len(cheats), cheats)
-    return cheats
-
-
-def gather_eq_tiles(solutions, cheater_eq_map, max_cost, min_cost_map):
-    cheats = set([r.cheat for rem, r in solutions])
-    for option in min_cost_map:
-        if option in cheater_eq_map:
-            for cheater in cheater_eq_map[option]:
-                if cheater.cost + min_cost_map[option] <= max_cost:
-                    cheats.add(cheater.cheat)
-
-    # print('cheats1', len(cheats), cheats)
-    return cheats
+    if DEBUG: print('great_cheats', len(great_cheats), great_cheats)
+    return great_cheats
 
 
 def print_path(sol):
