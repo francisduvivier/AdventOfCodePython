@@ -142,7 +142,6 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
             continue
         if popped_key in cheater_eq_map:
             if DEBUG: assert found_states[True][popped_key].cost <= popped_rob.cost
-            # if DEBUG: assert len([c for c in cheater_eq_map[next_key] if c.cheat == next_r.cheat]) == 0
             cheater_eq_map[popped_key].append(popped_rob)
             continue
         add_r(popped_rob)
