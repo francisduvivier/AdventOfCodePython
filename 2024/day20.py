@@ -11,7 +11,7 @@ sys.setrecursionlimit(15000000)
 test_input = open('day20-testinput.txt').read().strip()
 real_input = open('day20-input.txt').read().strip()
 
-DEBUG = True
+DEBUG = False
 
 
 def parse_input(input):
@@ -48,6 +48,33 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
     cheater_eq_map = {}  # yx_key to map of cheat_key to robot
     remaining_cost_map = {}  # yx_key to min_remaining_cost
 
+    def update_remaining_costs(r):
+        done_robots_min_remaining = set()
+        min_options = [(0,r)]
+        sortkey = lambda el: el[0]
+        while len(min_options):
+            min_options.sort(key=sortkey, reverse=True)
+            remaining, curr = min_options.pop()
+            curr_key = curr.yx_key()
+            if curr_key in remaining_cost_map and remaining_cost_map[curr_key] < remaining:
+                remaining = remaining_cost_map[curr_key]
+            else:
+                remaining_cost_map[curr_key] = remaining
+            assert not curr.path_tiles[-1].startswith('CHEAT')
+            for index, key in enumerate(reversed(curr.path_tiles[:-1])):
+                if key.startswith('CHEAT'):
+                    break
+                new_min_remaining = remaining + 1 + index
+                if key not in remaining_cost_map or remaining_cost_map[key]> new_min_remaining:
+                    remaining_cost_map[key] = new_min_remaining
+                if key not in cheater_eq_map:
+                    continue
+                subs = cheater_eq_map[key]
+                for sub in subs:
+                    if sub in done_robots_min_remaining:
+                        continue
+                    done_robots_min_remaining.add(sub)
+                    min_options.append((remaining + index + 1, sub))
     def add_r(r):
         r_key = r.yx_key()
         cheated = r.cheat is not None
@@ -58,7 +85,8 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
             cheater_eq_map[r_key] = []
         sub_states = get_next_states(r)
         for sub_r in sub_states:
-            if min_possible_cost(sub_r) > max_cost:
+            min_cost = min_possible_cost(sub_r)
+            if min_cost > max_cost:
                 continue
             insert_sorted(sub_r)
 
@@ -70,8 +98,10 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
 
     def min_possible_cost(r):
         key = r.yx_key()
-        if key in remaining_cost_map:
-            return r.cost + remaining_cost_map[key]
+        if key in remaining_cost_map and r.cheat:
+            min_remaining_cost = remaining_cost_map[key]
+            if DEBUG: assert r.cost + min_remaining_cost >= minimal_possible_cost_for_position(r)
+            return r.cost + min_remaining_cost
         return minimal_possible_cost_for_position(r)
 
     solutions = []
@@ -83,6 +113,7 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
         if end_found:
             if DEBUG: print('found path', next_r, next_r.cost)
             solutions.append(next_r)
+            update_remaining_costs(next_r)
             continue
         if next_key in found_states[False]:
             if DEBUG: assert found_states[False][next_key].cost <= next_r.cost
@@ -92,19 +123,20 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
             continue
         if next_key in cheater_eq_map:
             if DEBUG: assert found_states[True][next_key].cost <= next_r.cost
-            if DEBUG: assert len([c for c in cheater_eq_map[next_key] if c.cheat == next_r.cheat]) == 0
+            # if DEBUG: assert len([c for c in cheater_eq_map[next_key] if c.cheat == next_r.cheat]) == 0
             cheater_eq_map[next_key].append(next_r)
             continue
         add_r(next_r)
 
-
-    cheats = gather_eq_tiles(solutions, cheater_eq_map, found_states[True], max_cost)
+    for r in solutions:
+        update_remaining_costs(r)
+    cheats = gather_eq_tiles(solutions, cheater_eq_map, found_states[True], max_cost, remaining_cost_map)
 
     if DEBUG: print('cheats', len(cheats), cheats)
     return cheats
 
 
-def gather_eq_tiles(solutions, cheater_eq_map, found_states, max_cost):
+def gather_eq_tiles(solutions, cheater_eq_map, found_states, max_cost, min_cost_map):
     print('gathering results')
     cheats = {}
     if (DEBUG): print('solutions', [(sol.cheat, max_cost - sol.cost) for sol in solutions])
@@ -115,36 +147,10 @@ def gather_eq_tiles(solutions, cheater_eq_map, found_states, max_cost):
     options = [(0, solution) for solution in solutions if solution.cheat]
     print('gathering min_remaining_for_tile_map')
 
-    min_remaining_for_tile_map = {}
-    min_options = options.copy()
-    done_robots = set()
-    sortkey = lambda el: el[0]
-    while len(min_options):
-        min_options.sort(key=sortkey, reverse=True)
-        remaining, curr = min_options.pop()
-        curr_key = curr.yx_key()
-        if curr_key in min_remaining_for_tile_map and min_remaining_for_tile_map[curr_key] < remaining:
-            remaining = min_remaining_for_tile_map[curr_key]
-        else:
-            min_remaining_for_tile_map[curr_key] = remaining
-        assert not curr.path_tiles[-1].startswith('CHEAT')
-        for index, key in enumerate(reversed(curr.path_tiles[:-1])):
-            if key.startswith('CHEAT'):
-                break
-            new_min_remaining = remaining + 1 + index
-            if key not in min_remaining_for_tile_map or min_remaining_for_tile_map[key]> new_min_remaining:
-                min_remaining_for_tile_map[key] = new_min_remaining
-            if key not in cheater_eq_map:
-                continue
-            subs = cheater_eq_map[key]
-            for sub in subs:
-                if sub in done_robots:
-                    continue
-                done_robots.add(sub)
-                min_options.append((remaining + index + 1, sub))
+
 
     print('min_remaining_for_tile_map done')
-    if DEBUG: print(min_remaining_for_tile_map)
+    if DEBUG: print(min_cost_map)
     done_robots = set()
     while len(options):
         (nb_tiles_backtracked, robot) = options.pop()
@@ -159,7 +165,7 @@ def gather_eq_tiles(solutions, cheater_eq_map, found_states, max_cost):
                 if cheater in done_robots:
                     continue
                 done_robots.add(cheater)
-                min_remaining = min_remaining_for_tile_map[tile_key]
+                min_remaining = min_cost_map[tile_key]
                 if cheater.cost + min_remaining > max_cost:
                     continue
                 new_saved = max_cost - (cheater.cost + min_remaining)
@@ -227,7 +233,7 @@ def part12(input, best_non_cheat, improvement_needed, max_cheat_dist=1):
 
 
 #
-# assert part12(test_input, 84, 0, 1) == 1
+assert part12(test_input, 84, 0, 1) == 1
 # assert part12(test_input, 84, 2, 2) == 14 + 14 + 16
 # assert part12(test_input, 84, 4, 2) == 14 + 16
 # assert part12(test_input, 84, 6, 2) == 16
