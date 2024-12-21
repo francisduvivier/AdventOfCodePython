@@ -49,6 +49,7 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
     remaining_cost_map = {}  # yx_key to min_remaining_cost
 
     def update_remaining_costs(rem, r):
+        if not r.cheat: return
         if DEBUG: assert not r.path_tiles[-1].startswith('CHEAT')
         # if DEBUG: assert not r.cost + rem <= max_cost
         done_robots_min_remaining = set()
@@ -56,6 +57,7 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
         remaining_cost_map[r.yx_key()] = rem
         min_options = [(rem, r)]
         sortkey = lambda el: el[0]
+
         while len(min_options):
             min_options.sort(key=sortkey, reverse=True)
             remaining, curr = min_options.pop()
@@ -71,8 +73,7 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
                 new_min_remaining = remaining + 1 + index
                 if key not in remaining_cost_map or remaining_cost_map[key] > new_min_remaining:
                     remaining_cost_map[key] = new_min_remaining
-                if key not in cheater_eq_map:
-                    continue
+                if DEBUG: assert key in cheater_eq_map
                 subs = cheater_eq_map[key]
                 for sub in subs.copy():
                     if sub in done_robots_min_remaining:
