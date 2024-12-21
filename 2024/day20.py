@@ -11,7 +11,7 @@ sys.setrecursionlimit(15000000)
 test_input = open('day20-testinput.txt').read().strip()
 real_input = open('day20-input.txt').read().strip()
 
-DEBUG = True
+DEBUG = False
 
 
 def parse_input(input):
@@ -128,7 +128,7 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
         #         continue
         #         # assert remaining + popped_rob.cost <= max_cost
         if end_found:
-            if DEBUG and remaining == 0: print('found path', popped_rob, popped_rob.cost)
+            if remaining == 0: print('found path', popped_rob, popped_rob.cost)
             if popped_rob.cheat not in great_cheats:
                 great_cheats.add(popped_rob.cheat)
                 solutions.append((remaining, popped_rob))  # WHY IS THIS NEEDED
