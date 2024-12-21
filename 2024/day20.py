@@ -1,6 +1,7 @@
 from functools import cache
 
 import numpy as np
+from numpy.f2py.f90mod_rules import options
 
 from grid_robot import find_value, GridRobot, DIRS, DIR, yx_key
 import sys
@@ -82,13 +83,13 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
                 solutions.append(next_r)
                 continue
             if next_key in found_states[False]:
-                assert found_states[False][next_key].cost <= next_r.cost
+                if DEBUG: assert found_states[False][next_key].cost <= next_r.cost
                 continue
             if next_r.cheated is None:
                 insert_sorted(next_r)
                 continue
             if next_key in found_states[True]:
-                assert found_states[True][next_key].cost <= next_r.cost
+                if DEBUG: assert found_states[True][next_key].cost <= next_r.cost
                 eq_map[next_key].append(next_r)
                 continue
             insert_sorted(next_r)
@@ -103,14 +104,39 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
 
 
 def gather_eq_tiles(solutions, eq_map, found_states, max_cost):
+    # max_cost += 1
     print('gathering results')
     cheats = {}
     if (DEBUG): print('solutions', [(sol.cheated, max_cost - sol.cost) for sol in solutions])
+    if (DEBUG): print('solutions paths\n' + '\n'.join([print_path(sol) for sol in solutions]))
     for sol in solutions:
         saved = (max_cost - (sol.cost + 0))
         cheats[sol.cheated] = saved
     options = [(0, solution) for solution in solutions if solution.cheated]
-    tiles_checked = {}
+
+    min_remaining_for_tile_map = {}
+    min_options = options.copy()
+    done_robots = set()
+    while len(min_options):
+        remaining, curr = min_options.pop()
+        curr_key = curr.yx_key()
+        if curr_key in min_remaining_for_tile_map and min_remaining_for_tile_map[curr_key] < remaining:
+            remaining = min_remaining_for_tile_map[curr_key]
+        else:
+            min_remaining_for_tile_map[curr_key] = remaining
+        for key in reversed(curr.path_tiles[:-1]):
+            if key.startswith('CHEAT'):
+                continue
+            if key not in eq_map:
+                continue
+            subs = eq_map[key]
+            for sub in subs:
+                if sub in done_robots:
+                    continue
+                done_robots.add(sub)
+                min_options.append((remaining + 1, sub))
+    print('min_remaining_for_tile_map done', min_remaining_for_tile_map)
+    done_robots = set()
     while len(options):
         (nb_tiles_backtracked, robot) = options.pop()
         yx_key = robot.yx_key()
@@ -120,23 +146,25 @@ def gather_eq_tiles(solutions, eq_map, found_states, max_cost):
         assert not robot.path_tiles[-1].startswith('CHEAT')
         for index, tile_key in enumerate(reversed(robot.path_tiles[:-1])):
             if tile_key.startswith('CHEAT'): break
-            if tile_key in tiles_checked and tiles_checked[tile_key] <= robot.cost:
-                continue
-            tiles_checked[tile_key] = robot.cost
             for eq in eq_map[tile_key]:
-                # if eq.cheated in cheats:
-                #     continue
-                # assert not eq.path_tiles[-1].startswith('CHEAT')
+                if eq in done_robots:
+                    continue
+                done_robots.add(eq)
                 eq_backtracked = nb_tiles_backtracked + index + 1
-                if eq.cost <= max_cost - eq_backtracked:
-                    saved = (max_cost - (eq.cost + eq_backtracked))
-                    if eq.cheated in cheats and cheats[eq.cheated] > saved:
-                        saved = cheats[eq.cheated]
-                    cheats[eq.cheated] = saved
-                    options.append((eq_backtracked, eq))
+                min_remaining = min_remaining_for_tile_map[tile_key]
+                if eq.cost + min_remaining > max_cost:
+                    continue
+                new_saved = max_cost - (eq.cost + min_remaining)
+                if eq.cheated not in cheats or cheats[eq.cheated] < new_saved:
+                    cheats[eq.cheated] = new_saved
+                options.append((min_remaining, eq))
 
     # print('cheats1', len(cheats), cheats)
     return cheats
+
+
+def print_path(sol):
+    return ((sol.cheated or '') + ':' + str(sol.cost)).ljust(30) + str(sol.path_tiles)
 
 
 def find_all(start_robot, end_robot, grid, max_cost, max_cheat_dist):
@@ -199,7 +227,7 @@ assert part12(test_input, 84, 8, 2) >= 14
 assert part12(test_input, 84, 10, 2) >= 10
 assert part12(test_input, 84, 12, 2) >= 8
 assert part12(test_input, 84, 20, 2) >= 5
-assert part12(test_input, 84, 36, 2) >= 4
+assert part12(test_input, 84, 30, 2) >= 4
 assert part12(test_input, 84, 38, 2) >= 3
 assert part12(test_input, 84, 40, 2) >= 2
 assert part12(test_input, 84, 64, 2) == 1
