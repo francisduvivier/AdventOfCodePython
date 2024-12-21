@@ -77,11 +77,9 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
                 for sub in subs.copy():
                     if sub in done_robots_min_remaining:
                         continue
-                    if (sub.cost + new_min_remaining) > max_cost:
-                        subs.remove(sub)
-                        done_robots_min_remaining.add(sub)
-                    else:
+                    if (sub.cost + new_min_remaining) <= max_cost:
                         great_cheats.add(sub.cheat)
+                    subs.remove(sub)
                     done_robots_min_remaining.add(sub)
                     min_options.append((new_min_remaining, sub))
 
