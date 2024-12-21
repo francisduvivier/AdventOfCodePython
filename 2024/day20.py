@@ -11,7 +11,7 @@ sys.setrecursionlimit(15000000)
 test_input = open('day20-testinput.txt').read().strip()
 real_input = open('day20-input.txt').read().strip()
 
-DEBUG = False
+DEBUG = True
 
 
 def parse_input(input):
@@ -49,6 +49,8 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
     remaining_cost_map = {}  # yx_key to min_remaining_cost
 
     def update_remaining_costs(rem, r):
+        if DEBUG: assert not r.path_tiles[-1].startswith('CHEAT')
+        # if DEBUG: assert not r.cost + rem <= max_cost
         done_robots_min_remaining = set()
         min_options = [(rem, r)]
         sortkey = lambda el: el[0]
@@ -108,16 +110,28 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
             return r.cost + min_remaining_cost
         return minimal_possible_cost_for_position(r)
 
+    great_cheats = set()
     solutions = []
     while len(sorted_states_to_try) > 0:
         sorted_states_to_try.sort(key=get_robot_cost_neg)
         popped_rob = sorted_states_to_try.pop()
         popped_key = popped_rob.yx_key()
         end_found = end_check(popped_rob)
+        remaining = 0
+        # if popped_rob.cheat and popped_key in remaining_cost_map:
+        #     remaining = remaining_cost_map[popped_key]
+        #     update_remaining_costs(remaining, popped_rob)
+        #     if remaining + popped_rob.cost <= max_cost:
+        #         # end_found = True
+        #         great_cheats.add(popped_rob.cheat)
+        #     else:
+        #         pass
+        #     continue
+        #     # assert remaining + popped_rob.cost <= max_cost
         if end_found:
             if DEBUG: print('found path', popped_rob, popped_rob.cost)
-            solutions.append((0,popped_rob))
-            update_remaining_costs(0, popped_rob)
+            solutions.append((remaining, popped_rob))
+            update_remaining_costs(remaining, popped_rob)
             continue
         if popped_key in found_states[False]:
             if DEBUG: assert found_states[False][popped_key].cost <= popped_rob.cost
@@ -135,17 +149,18 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
     for rem, r in solutions:
         update_remaining_costs(rem, r)
     cheats = gather_eq_tiles(solutions, cheater_eq_map, max_cost, remaining_cost_map)
-
     if DEBUG: print('cheats', len(cheats), cheats)
+    cheats = cheats.union(great_cheats)
+    if DEBUG: print('cheats.union(great_cheats)', len(cheats), cheats)
     return cheats
 
 
 def gather_eq_tiles(solutions, cheater_eq_map, max_cost, min_cost_map):
-    cheats  = set([r.cheat for rem, r in solutions])
+    cheats = set([r.cheat for rem, r in solutions])
     for option in min_cost_map:
         if option in cheater_eq_map:
             for cheater in cheater_eq_map[option]:
-                if cheater.cost+ min_cost_map[option] <= max_cost:
+                if cheater.cost + min_cost_map[option] <= max_cost:
                     cheats.add(cheater.cheat)
 
     # print('cheats1', len(cheats), cheats)
