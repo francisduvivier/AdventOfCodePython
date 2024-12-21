@@ -48,9 +48,9 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
     cheater_eq_map = {}  # yx_key to map of cheat_key to robot
     remaining_cost_map = {}  # yx_key to min_remaining_cost
 
-    def update_remaining_costs(r):
+    def update_remaining_costs(rem, r):
         done_robots_min_remaining = set()
-        min_options = [(0, r)]
+        min_options = [(rem, r)]
         sortkey = lambda el: el[0]
         while len(min_options):
             min_options.sort(key=sortkey, reverse=True)
@@ -116,8 +116,8 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
         end_found = end_check(popped_rob)
         if end_found:
             if DEBUG: print('found path', popped_rob, popped_rob.cost)
-            solutions.append(popped_rob)
-            update_remaining_costs(popped_rob)
+            solutions.append((0,popped_rob))
+            update_remaining_costs(0, popped_rob)
             continue
         if popped_key in found_states[False]:
             if DEBUG: assert found_states[False][popped_key].cost <= popped_rob.cost
@@ -132,8 +132,8 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
             continue
         add_r(popped_rob)
 
-    for r in solutions:
-        update_remaining_costs(r)
+    for rem, r in solutions:
+        update_remaining_costs(rem, r)
     cheats = gather_eq_tiles(solutions, cheater_eq_map, max_cost, remaining_cost_map)
 
     if DEBUG: print('cheats', len(cheats), cheats)
@@ -141,7 +141,7 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
 
 
 def gather_eq_tiles(solutions, cheater_eq_map, max_cost, min_cost_map):
-    cheats  = set([r.cheat for r in solutions])
+    cheats  = set([r.cheat for rem, r in solutions])
     for option in min_cost_map:
         if option in cheater_eq_map:
             for cheater in cheater_eq_map[option]:
