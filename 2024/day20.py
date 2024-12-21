@@ -111,26 +111,26 @@ def count_cheats(start_robot: GridRobot, end_check, minimal_possible_cost_for_po
     solutions = []
     while len(sorted_states_to_try) > 0:
         sorted_states_to_try.sort(key=get_robot_cost_neg)
-        next_r = sorted_states_to_try.pop()
-        next_key = next_r.yx_key()
-        end_found = end_check(next_r)
+        popped_rob = sorted_states_to_try.pop()
+        popped_key = popped_rob.yx_key()
+        end_found = end_check(popped_rob)
         if end_found:
-            if DEBUG: print('found path', next_r, next_r.cost)
-            solutions.append(next_r)
-            update_remaining_costs(next_r)
+            if DEBUG: print('found path', popped_rob, popped_rob.cost)
+            solutions.append(popped_rob)
+            update_remaining_costs(popped_rob)
             continue
-        if next_key in found_states[False]:
-            if DEBUG: assert found_states[False][next_key].cost <= next_r.cost
+        if popped_key in found_states[False]:
+            if DEBUG: assert found_states[False][popped_key].cost <= popped_rob.cost
             continue
-        if next_r.cheat is None:
-            add_r(next_r)
+        if popped_rob.cheat is None:
+            add_r(popped_rob)
             continue
-        if next_key in cheater_eq_map:
-            if DEBUG: assert found_states[True][next_key].cost <= next_r.cost
+        if popped_key in cheater_eq_map:
+            if DEBUG: assert found_states[True][popped_key].cost <= popped_rob.cost
             # if DEBUG: assert len([c for c in cheater_eq_map[next_key] if c.cheat == next_r.cheat]) == 0
-            cheater_eq_map[next_key].append(next_r)
+            cheater_eq_map[popped_key].append(popped_rob)
             continue
-        add_r(next_r)
+        add_r(popped_rob)
 
     for r in solutions:
         update_remaining_costs(r)
