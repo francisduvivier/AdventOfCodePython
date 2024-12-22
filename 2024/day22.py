@@ -7,6 +7,7 @@ from util import map_to_numbers, sub_map_to_numbers
 import sys
 
 test_input = open('day22-testinput.txt').read().strip()
+test_input_2 = open('day22-testinput2.txt').read().strip()
 real_input = open('day22-input.txt').read().strip()
 sys.setrecursionlimit(3000)
 
@@ -32,17 +33,20 @@ def prune(secret):
 
 assert prune(100000000) == 16113920
 
-
+@cache
 def get_next_secret(secret):
     secret = mult_64(secret)
     secret = div_32(secret)
     return prune(mix(secret, secret << 11))
 
+
 def div_32(secret):
     return prune(mix(secret, int(secret >> 5)))
 
+
 def mult_64(secret):
     return prune(mix(secret, secret << 6))
+
 
 @cache
 def get_next_secret_rec(secret, times):
@@ -77,6 +81,47 @@ def part1(input):
     print(result)
     return result
 
-
+DEBUG = False
 assert part1(test_input) == 37327623
-part1(real_input)
+if DEBUG: assert part1(real_input) == 13022553808
+
+
+def last_digit(number):
+    return number % 10
+
+assert last_digit(0) == 0
+assert last_digit(1) == 1
+assert last_digit(10) == 0
+assert last_digit(113) == 3
+
+@cache
+def count_win(seq: tuple[int], secret: int, times: int):
+    prev = last_digit(secret)
+    change = [None, None, None, None]
+    next_secret = secret
+    for i in range(times):
+        next_secret = get_next_secret(next_secret)
+        change.pop(0)
+        new_price = last_digit(next_secret)
+        change.append(new_price - prev)
+        prev = new_price
+        if seq == tuple(change):
+            return new_price
+    return 0
+
+
+assert count_win((-2, 1, -1, 3), 1, 2000) == 7
+assert count_win((-2, 1, -1, 3), 2, 2000) == 7
+assert count_win((-2, 1, -1, 3), 3, 2000) == 0
+assert count_win((-2, 1, -1, 3), 2024, 2000) == 9
+
+
+def part2(input):
+    secrets = parse_input(input)
+    result = sum([get_next_secret_rec(secret, 2000) for secret in secrets])
+    print(result)
+    return result
+
+
+assert part2(test_input_2) == 23
+part2(real_input)
