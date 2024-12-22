@@ -33,6 +33,7 @@ def prune(secret):
 
 assert prune(100000000) == 16113920
 
+
 @cache
 def get_next_secret(secret):
     secret = mult_64(secret)
@@ -81,6 +82,7 @@ def part1(input):
     print(result)
     return result
 
+
 DEBUG = False
 assert part1(test_input) == 37327623
 if DEBUG: assert part1(real_input) == 13022553808
@@ -89,10 +91,12 @@ if DEBUG: assert part1(real_input) == 13022553808
 def last_digit(number):
     return number % 10
 
+
 assert last_digit(0) == 0
 assert last_digit(1) == 1
 assert last_digit(10) == 0
 assert last_digit(113) == 3
+
 
 @cache
 def count_win(seq: tuple[int], secret: int, times: int):
@@ -115,10 +119,38 @@ assert count_win((-2, 1, -1, 3), 2, 2000) == 7
 assert count_win((-2, 1, -1, 3), 3, 2000) == 0
 assert count_win((-2, 1, -1, 3), 2024, 2000) == 9
 
+@cache
+def get_win_map(secret: int, times: int):
+    win_map = {}
+    prev = last_digit(secret)
+    change = [None, None, None, None]
+    next_secret = secret
+    for i in range(times):
+        next_secret = get_next_secret(next_secret)
+        change.pop(0)
+        new_price = last_digit(next_secret)
+        change.append(new_price - prev)
+        prev = new_price
+        if None not in change:
+            new_tuple = tuple(change)
+            win_map[new_tuple] = win_map[new_tuple] if new_tuple in win_map else new_price
+    return win_map
+
+assert get_win_map(1, 2000)[(-2, 1, -1, 3)] == 7
+assert get_win_map( 2, 2000)[(-2, 1, -1, 3)] == 7
+assert (-2, 1, -1, 3) not in get_win_map( 3, 2000)
+assert get_win_map( 2024, 2000)[(-2, 1, -1, 3)] == 9
 
 def part2(input):
     secrets = parse_input(input)
-    result = sum([get_next_secret_rec(secret, 2000) for secret in secrets])
+    total_win_map = {}
+    for secret in secrets:
+        # min_map is tuple to win
+        win_map = get_win_map(secret, 2000)
+        for item in win_map:
+            total_win_map[item] = win_map[item] + (total_win_map[item] if item in total_win_map else 0)
+
+    result = max(total_win_map.values())
     print(result)
     return result
 
