@@ -19,7 +19,7 @@ def part1(input):
     code_results = [part1_(code) for code in codes]
 
     result = sum([res[0] * res[1] for res in code_results])
-    print('result', result)
+    print('result part 1', result)
     return result
 
 
@@ -134,12 +134,12 @@ assert calc_keys_rec(1, '>>A') == 'vAA^A'
 assert calc_keys_rec(1, '>>vA') == 'vAA<A>^A'
 
 
-def part1_(code):
+def part1_(code, robots=2):
     curr_letter = 'A'
     all = ''
     for letter in code:
         move_letters_options = get_pad_letters(curr_letter, letter, 'numpad_grid')
-        all += min([calc_keys_rec(2, move_letters) for move_letters in move_letters_options])
+        all += min([calc_keys_rec(robots, move_letters) for move_letters in move_letters_options])
         curr_letter = letter
     multiplier = int(code[:-1])
     print('full result', (len(all), multiplier), all)
@@ -158,3 +158,15 @@ assert part1_('379A') == (64, 379)
 assert part1(test_input) == 126384
 
 part1(real_input)
+
+
+def part2(input):
+    codes = parse_input(input)
+    code_results = [part1_(code, 25) for code in codes]
+
+    result = sum([res[0] * res[1] for res in code_results])
+    print('result part 2', result)
+    return result
+
+
+part2(real_input)
