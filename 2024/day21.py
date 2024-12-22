@@ -46,12 +46,35 @@ DEBUG = True
 
 
 @cache
-def get_pad_letters(from_val, to_val, grid_name: str):
+def translate_move(from_val: str, to_val: str, grid_name: str) -> (DotMap, np.array, DotMap):
     grid = numpad_grid if grid_name == 'numpad_grid' else dirpad_grid
-    order = 'v>^<' if grid[0][0] is None else '^>v<'
-    if DEBUG: assert order == 'v>^<' if grid_name == 'dirpad_grid' else '^>v<'
     from_pos = find_value_pos(from_val, grid)
     to_pos = find_value_pos(to_val, grid)
+    return from_pos, to_pos, grid
+
+
+def unsorted_passes_none(from_val: str, to_val: str, grid_name):
+    from_pos, to_pos, grid = translate_move(from_val, to_val, grid_name)
+    none_pos = find_value_pos(None, grid)
+    return (from_pos.x == none_pos.x and to_pos.y == none_pos.y or
+            from_pos.y == none_pos.y and to_pos.x == none_pos.x)
+    pass
+
+
+assert unsorted_passes_none('A', 'A', 'dirpad_grid') == False
+assert unsorted_passes_none('A', 'v', 'dirpad_grid') == False
+assert unsorted_passes_none('A', '<', 'dirpad_grid') == True
+assert unsorted_passes_none('A', 'A', 'numpad_grid') == False
+assert unsorted_passes_none('A', '9', 'numpad_grid') == False
+assert unsorted_passes_none('A', '5', 'numpad_grid') == False
+assert unsorted_passes_none('A', '4', 'numpad_grid') == True
+
+
+@cache
+def get_pad_letters(from_val, to_val, grid_name: str):
+    from_pos, to_pos, grid = translate_move(from_val, to_val, grid_name)
+    order = 'v>^<' if grid[0][0] is None else '^>v<'
+    if DEBUG: assert order == 'v>^<' if grid_name == 'dirpad_grid' else '^>v<'
     ydiff = to_pos.y - from_pos.y
     xdiff = to_pos.x - from_pos.x
     letters = []
@@ -62,19 +85,23 @@ def get_pad_letters(from_val, to_val, grid_name: str):
 
     sort_key = lambda l: order.index(l)
     sorted_letters = sorted(letters, key=sort_key)
-    return ''.join(sorted_letters) + 'A'
+    path_letters = [''.join(sorted_letters) + 'A']
+    if unsorted_passes_none(from_val, to_val, grid_name) or xdiff == 0 or ydiff == 0:
+        return path_letters
+    return path_letters + [''.join(reversed(sorted_letters)) + 'A']
 
 
-assert get_pad_letters('A', 'A', 'dirpad_grid') == 'A'
-assert get_pad_letters('A', '<', 'dirpad_grid') == 'v<<A'
-assert get_pad_letters('<', 'A', 'dirpad_grid') == '>>^A'
-assert get_pad_letters('A', '>', 'dirpad_grid') == 'vA'
-assert get_pad_letters('>', 'A', 'dirpad_grid') == '^A'
+assert get_pad_letters('A', 'A', 'dirpad_grid') == ['A']
+assert get_pad_letters('A', '<', 'dirpad_grid') == ['v<<A']
+assert get_pad_letters('<', 'A', 'dirpad_grid') == ['>>^A']
+assert get_pad_letters('v', 'A', 'dirpad_grid') == ['>^A', '^>A']
+assert get_pad_letters('A', '>', 'dirpad_grid') == ['vA']
+assert get_pad_letters('>', 'A', 'dirpad_grid') == ['^A']
 
-assert get_pad_letters('0', 'A', 'numpad_grid') == '>A'
-assert get_pad_letters('A', '0', 'numpad_grid') == '<A'
-assert get_pad_letters('A', '7', 'numpad_grid') == '^^^<<A'
-assert get_pad_letters('7', 'A', 'numpad_grid') == '>>vvvA'
+assert get_pad_letters('0', 'A', 'numpad_grid') == ['>A']
+assert get_pad_letters('A', '0', 'numpad_grid') == ['<A']
+assert get_pad_letters('A', '7', 'numpad_grid') == ['^^^<<A']
+assert get_pad_letters('7', 'A', 'numpad_grid') == ['>>vvvA']
 
 
 @cache
@@ -85,8 +112,8 @@ def calc_keys_rec(nb_subrobots: int, keys: str):
     curr_letter = 'A'
     all = ''
     for letter in keys:
-        move_letters = get_pad_letters(curr_letter, letter, grid_name)
-        all += calc_keys_rec(nb_subrobots - 1, move_letters)
+        move_letters_options = get_pad_letters(curr_letter, letter, grid_name)
+        all += min([calc_keys_rec(nb_subrobots - 1, move_letters) for move_letters in move_letters_options])
         curr_letter = letter
     return all
 
@@ -111,8 +138,8 @@ def part1_(code):
     curr_letter = 'A'
     all = ''
     for letter in code:
-        move_letters = get_pad_letters(curr_letter, letter, 'numpad_grid')
-        all += calc_keys_rec(2, move_letters)
+        move_letters_options = get_pad_letters(curr_letter, letter, 'numpad_grid')
+        all += min([calc_keys_rec(2, move_letters) for move_letters in move_letters_options])
         curr_letter = letter
     multiplier = int(code[:-1])
     print('full result', (len(all), multiplier), all)
@@ -125,6 +152,9 @@ assert part1_('980A') == (60, 980)
 assert part1_('179A') == (68, 179)
 assert part1_('456A') == (64, 456)
 assert part1_('379A') == (64, 379)
+# v<<A>>^AvA^Av<<A>>^Av<A<A>>^AAvAA^<A>Av<A<A>>^AvA^<A>Av<A>^AAv<<A>>^AvA^<A>A
+
+# <v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A
 assert part1(test_input) == 126384
 
 part1(real_input)
