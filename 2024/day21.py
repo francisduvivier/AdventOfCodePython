@@ -16,7 +16,7 @@ def parse_input(input):
 
 def part1(input):
     codes = parse_input(input)
-    code_results = [part1_(code) for code in codes]
+    code_results = [calc_numpad_cost(code) for code in codes]
 
     result = sum([res[0] * res[1] for res in code_results])
     print('result part 1', result)
@@ -42,7 +42,7 @@ assert numpad_grid[0][0] == '7'
 assert numpad_grid[3][0] is None
 assert numpad_grid[3][2] == 'A'
 
-DEBUG = True
+DEBUG = False
 
 
 @cache
@@ -106,13 +106,12 @@ assert get_pad_letters('7', 'A', 'numpad_grid') == ['>>vvvA']
 
 @cache
 def calc_keys_rec(nb_subrobots: int, keys: str):
-    grid_name = 'dirpad_grid'
     if nb_subrobots == 0:
-        return keys
+        return len(keys)
     curr_letter = 'A'
-    all = ''
+    all = 0
     for letter in keys:
-        move_letters_options = get_pad_letters(curr_letter, letter, grid_name)
+        move_letters_options = get_pad_letters(curr_letter, letter, 'dirpad_grid')
         all += min([calc_keys_rec(nb_subrobots - 1, move_letters) for move_letters in move_letters_options])
         curr_letter = letter
     return all
@@ -120,49 +119,52 @@ def calc_keys_rec(nb_subrobots: int, keys: str):
 
 start = find_value_pos('A', numpad_grid)
 assert start == DotMap({'y': 3, 'x': 2})
-assert calc_keys_rec(0, 'A') == 'A'
-assert calc_keys_rec(0, '<') == '<'
-assert calc_keys_rec(0, '>') == '>'
-assert calc_keys_rec(0, 'v') == 'v'
-assert calc_keys_rec(0, '^') == '^'
-assert calc_keys_rec(1, 'A') == 'A'
-assert calc_keys_rec(2, 'A') == 'A'
-assert calc_keys_rec(3, 'A') == 'A'
-assert calc_keys_rec(4, 'A') == 'A'
-assert calc_keys_rec(1, '>') == 'vA'
-assert calc_keys_rec(1, '>>A') == 'vAA^A'
-assert calc_keys_rec(1, '>>vA') == 'vAA<A>^A'
+assert calc_keys_rec(0, 'A') == len('A')
+assert calc_keys_rec(0, '<') == len('<')
+assert calc_keys_rec(0, '>') == len('>')
+assert calc_keys_rec(0, 'v') == len('v')
+assert calc_keys_rec(0, '^') == len('^')
+assert calc_keys_rec(1, 'A') == len('A')
+assert calc_keys_rec(2, 'A') == len('A')
+assert calc_keys_rec(3, 'A') == len('A')
+assert calc_keys_rec(4, 'A') == len('A')
+assert calc_keys_rec(1, '>') == len('vA')
+assert calc_keys_rec(1, '>>A') == len('vAA^A')
+assert calc_keys_rec(1, '>>vA') == len('vAA<A>^A')
 
 
-def part1_(code, robots=2):
+def calc_numpad_cost(code, robots=2):
     curr_letter = 'A'
-    all = ''
+    all = 0
     for letter in code:
         move_letters_options = get_pad_letters(curr_letter, letter, 'numpad_grid')
         all += min([calc_keys_rec(robots, move_letters) for move_letters in move_letters_options])
         curr_letter = letter
     multiplier = int(code[:-1])
-    print('full result', (len(all), multiplier), all)
-    return (len(all), multiplier)
+    if DEBUG: print('full result', (len(all), multiplier), all)
+    return (all, multiplier)
 
 
 # 68 * 29, 60 * 980, 68 * 179, 64 * 456, 64 * 379. Adding these together produces 126384.
-assert part1_('029A') == (68, 29)
-assert part1_('980A') == (60, 980)
-assert part1_('179A') == (68, 179)
-assert part1_('456A') == (64, 456)
-assert part1_('379A') == (64, 379)
+assert calc_numpad_cost('029A') == (68, 29)
+assert calc_numpad_cost('980A') == (60, 980)
+assert calc_numpad_cost('179A') == (68, 179)
+assert calc_numpad_cost('456A') == (64, 456)
+assert calc_numpad_cost('379A') == (64, 379)
 # v<<A>>^AvA^Av<<A>>^Av<A<A>>^AAvAA^<A>Av<A<A>>^AvA^<A>Av<A>^AAv<<A>>^AvA^<A>A
 
 # <v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A
 assert part1(test_input) == 126384
 
-part1(real_input)
+assert part1(real_input) == 94426
 
 
 def part2(input):
     codes = parse_input(input)
-    code_results = [part1_(code, 25) for code in codes]
+    code_results = []
+    for robots in range(1, 26):
+        print('part 2: trying i: ' + str(robots))
+        code_results = [calc_numpad_cost(code, robots) for code in codes]
 
     result = sum([res[0] * res[1] for res in code_results])
     print('result part 2', result)
