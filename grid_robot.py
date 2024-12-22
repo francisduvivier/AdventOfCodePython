@@ -1,4 +1,5 @@
 import numpy as np
+from dotmap import DotMap
 
 DIR = {
     '^': {'dx': 0, 'dy': -1},
@@ -132,6 +133,13 @@ def find_value(search_val, grid: np.array):
     y = result_tuple[0][0]
     x = result_tuple[1][0]
     return y, x
+
+
+def find_value_pos(search_val, grid: np.array):
+    result_tuple = np.where(grid == search_val)
+    y = result_tuple[0][0]
+    x = result_tuple[1][0]
+    return DotMap({'y': y, 'x': x})
 
 
 def print_grid(tile_grid):
