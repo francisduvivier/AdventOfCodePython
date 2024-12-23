@@ -26,16 +26,7 @@ def create_connections_map(pairs):
 
 def part1(input):
     pairs = parse_input(input)
-    # print(pairs)
     connections_map = create_connections_map(pairs)
-    # todo find number of unique triples where each of the three is connected
-    # i could do for every pc recursively look for other pc's that are all connected
-    # so rec fun gets list of pcs and the connection map and how many are needed
-    # if list == amount needed, return list
-    # if list < amount needed, then for one of the items, doesnt' matter which
-    # go through that lists' connection map and for every new item, check that is is also in the connection map for all the others
-    # we do that by checking for every item, which of the remaining items is connected to all
-    # then we remove the start triple from the map, this way we don't need to sort
     triples = set()
     for pc in connections_map:
         connections = connections_map[pc]
@@ -72,6 +63,7 @@ def find_longest_rec(connecteds, remaining_options, connections_map, longest_poi
 
 
 assert find_longest_rec(('A', 'B'), ['C'], {'C': ['A']}, [tuple()]) == tuple()
+assert find_longest_rec(('A'), ['B', 'C'], {'C': ['A', 'B'], 'B': ['A', 'C']}, [tuple()]) == ('A', 'B', 'C')
 assert find_longest_rec(('A', 'B'), [], {'C': ['A']}, [tuple()]) == ('A', 'B')
 assert find_longest_rec(('A', 'B'), ['C'], {'C': ['A', 'B']}, [tuple()]) == ('A', 'B', 'C')
 assert (find_longest_rec(('A', 'B'), ['C'], {'C': ['A', 'B']}, [('A', 'B')])
@@ -84,23 +76,11 @@ assert (find_longest_rec(('A', 'B'), ['C', 'D'], {'C': ['A', 'B', 'D'], 'D': ['A
 
 def part2(input):
     pairs = parse_input(input)
-    # print(pairs)
     connections_map = create_connections_map(pairs)
-    # todo find number of unique triples where each of the three is connected
-    # i could do for every pc recursively look for other pc's that are all connected
-    # so rec fun gets list of pcs and the connection map and how many are needed
-    # if list == amount needed, return list
-    # if list < amount needed, then for one of the items, doesnt' matter which
-    # go through that lists' connection map and for every new item, check that is is also in the connection map for all the others
-    # we do that by checking for every item, which of the remaining items is connected to all
-    # then we remove the start triple from the map, this way we don't need to sort
     longest_pointer = [tuple()]
     for pc in connections_map:
         connections = connections_map[pc]
-        for index, second in enumerate(connections):
-            remainder = connections[index + 1:]
-            connections_map[second].remove(pc)
-            find_longest_rec((pc, second), remainder, connections_map, longest_pointer)
+        find_longest_rec(tuple([pc]), connections, connections_map, longest_pointer)
 
     result = ','.join(sorted(longest_pointer[0]))
     print('longest', result)
